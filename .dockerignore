@@ -1,0 +1,14 @@
+**/.classpath
+**/.git
+**/.gitignore
+**/.gradle
+**/.project
+**/.settings
+**/.vscode
+**/bin
+**/build
+**/node_modules
+
+gradlew.bat
+
+README.md
