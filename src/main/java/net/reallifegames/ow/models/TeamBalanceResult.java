@@ -23,15 +23,20 @@
  */
 package net.reallifegames.ow.models;
 
-public class TeamBalance {
+import net.reallifegames.ow.balancer.BalanceInspector;
+
+public class TeamBalanceResult {
 
     private float score;
 
-    private int[] team;
+    private final int[] team;
 
-    public TeamBalance(float score, int[] team) {
+    private final BalanceInspector balanceInspector;
+
+    public TeamBalanceResult(float score, int[] team) {
         this.score = score;
         this.team = team;
+        this.balanceInspector = new BalanceInspector();
     }
 
     public float getScore() {
@@ -47,6 +52,10 @@ public class TeamBalance {
     }
 
     public void setTeam(int[] team) {
-        this.team = team;
+        System.arraycopy(team, 0, this.team, 0, team.length);
+    }
+
+    public BalanceInspector getBalanceInspector() {
+        return balanceInspector;
     }
 }

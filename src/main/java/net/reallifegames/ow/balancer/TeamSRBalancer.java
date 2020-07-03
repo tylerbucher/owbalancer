@@ -21,37 +21,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.reallifegames.ow.api.v1.balance;
+package net.reallifegames.ow.balancer;
 
-import net.reallifegames.ow.api.v1.ApiResponse;
-import net.reallifegames.ow.balancer.BalanceInspector;
+import net.reallifegames.ow.models.UserInfo;
 
 import javax.annotation.Nonnull;
-import java.util.List;
 
-/**
- * A standard users api fetch response structure.
- *
- * @author Tyler Bucher
- */
-public class BalanceResponse extends ApiResponse {
+public class TeamSRBalancer {
 
-    /**
-     * The list of users in this application.
-     */
-    public final List<BalancedPlayer> userList;
+    public int team1Sr;
 
-    public final BalanceInspector balancerMeta;
+    public int team2Sr;
 
-    /**
-     * Response constructor for Jackson json marshalling.
-     *
-     * @param apiResponse the root api response.
-     * @param userList    list of users in this application.
-     */
-    public BalanceResponse(@Nonnull final ApiResponse apiResponse, @Nonnull final List<BalancedPlayer> userList, @Nonnull final BalanceInspector balanceMeta) {
-        super(apiResponse.version);
-        this.userList = userList;
-        this.balancerMeta = balanceMeta;
+    public float calcTeamSrDifference(final float div,
+                                             @Nonnull final int[] idArray,
+                                             @Nonnull final UserInfo[] userInfoList) {
+        team1Sr = getTeamSr(0, idArray, userInfoList);
+        team2Sr = getTeamSr(6, idArray, userInfoList);
+        if (team2Sr > team1Sr) {
+            return (((float) team1Sr) * div) / ((float) team2Sr);
+        } else {
+            return (((float) team2Sr) * div) / ((float) team1Sr);
+        }
+    }
+
+    private int getTeamSr(final int offset, @Nonnull final int[] idArray, @Nonnull final UserInfo[] userInfoList) {
+        return userInfoList[idArray[offset]].tankSr +
+                userInfoList[idArray[offset + 1]].tankSr +
+                userInfoList[idArray[offset + 2]].dpsSr +
+                userInfoList[idArray[offset + 3]].dpsSr +
+                userInfoList[idArray[offset + 4]].supportSr +
+                userInfoList[idArray[offset + 5]].supportSr;
     }
 }

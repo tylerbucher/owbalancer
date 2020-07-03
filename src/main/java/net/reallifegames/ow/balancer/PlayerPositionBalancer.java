@@ -21,29 +21,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.reallifegames.ow.api.v1.balance;
+package net.reallifegames.ow.balancer;
 
 import net.reallifegames.ow.models.UserInfo;
 
 import javax.annotation.Nonnull;
 
-public class BalancedPlayer {
+public class PlayerPositionBalancer {
 
-    public static final int TANK_POSITION = 0;
+    public int team1PositionPreferenceCount;
+    public int team2PositionPreferenceCount;
 
-    public static final int SUPPORT_POSITION = 2;
+    public float calcPlayerPrimaryScore(final float div,
+                                                @Nonnull final int[] idArray,
+                                                @Nonnull final UserInfo[] userInfoList) {
+        team1PositionPreferenceCount = calcTeamPrimaryPosition(0, idArray, userInfoList);
+        team2PositionPreferenceCount = calcTeamPrimaryPosition(6, idArray, userInfoList);
+        return (((float) team1PositionPreferenceCount + team2PositionPreferenceCount) * div) / 24.0f;
+    }
 
-    public static final int DPS_POSITION = 1;
-
-    public final int team;
-
-    public final int position;
-
-    public final UserInfo user;
-
-    public BalancedPlayer(final int team, final int position, @Nonnull final UserInfo user) {
-        this.team = team;
-        this.position = position;
-        this.user = user;
+    private static int calcTeamPrimaryPosition(final int offset, @Nonnull final int[] idArray, @Nonnull final UserInfo[] userInfoList) {
+        return userInfoList[idArray[offset]].tankPreference +
+                userInfoList[idArray[offset + 1]].tankPreference +
+                userInfoList[idArray[offset + 2]].dpsPreference +
+                userInfoList[idArray[offset + 3]].dpsPreference +
+                userInfoList[idArray[offset + 4]].supportPreference +
+                userInfoList[idArray[offset + 5]].supportPreference;
     }
 }

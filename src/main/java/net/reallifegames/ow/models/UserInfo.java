@@ -43,6 +43,8 @@ public class UserInfo {
 
     public final int dpsSr;
 
+    public final int totalPref;
+
     public UserInfo(final int id,
                     @Nonnull final String name,
                     final int tankPreference,
@@ -59,5 +61,6 @@ public class UserInfo {
         this.tankSr = tankSr;
         this.supportSr = supportSr;
         this.dpsSr = dpsSr;
+        totalPref = tankPreference + dpsPreference + supportPreference;
     }
 }

@@ -27,9 +27,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import net.reallifegames.ow.DbModule;
 import net.reallifegames.ow.api.v1.ApiResponse;
+import net.reallifegames.ow.balancer.TieredBalancer;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -54,11 +54,16 @@ public class BalanceRequest {
         this.users = users;
     }
 
+    public boolean validate() {
+        return users.size() > 1 && users.size() < 13;
+    }
+
     /**
      * @param dbModule the module instance to use.
      * @return a user response for a user or null if an error.
      */
     public BalanceResponse getBalanceResponse(@Nonnull final ApiResponse apiResponse, @Nonnull final DbModule dbModule) {
-        return new BalanceResponse(apiResponse, TieredBalancer.getInstance().balancePlayers(dbModule, users));
+        final TieredBalancer.TieredBalancerResponse tieredBalancerResponse = (new TieredBalancer()).balancePlayers(dbModule, users);
+        return new BalanceResponse(apiResponse, tieredBalancerResponse.userInfoList, tieredBalancerResponse.balanceInspector);
     }
 }

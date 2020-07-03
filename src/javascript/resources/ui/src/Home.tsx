@@ -1,9 +1,10 @@
 import React, {FormEvent} from "react";
 import axios from "axios";
 // @ts-ignore
+import {Notific8} from 'notific8';
 import "../node_modules/notific8/src/sass/notific8.scss";
 // @ts-ignore
-import {Button, Select} from "metro4-react";
+import {Button, Dropdown, Select} from "metro4-react";
 
 type LoginProps = {
     // using `interface` is also ok
@@ -12,7 +13,9 @@ type LoginState = {
     selectData?: Array<JSX.Element>;
     selectedSelectData?: Array<string>;
     table1Rows?: Array<JSX.Element>;
+    table1MetaRows?: Array<JSX.Element>;
     table2Rows?: Array<JSX.Element>;
+    table2MetaRows?: Array<JSX.Element>;
 };
 
 class Home extends React.Component<LoginProps, LoginState> {
@@ -23,7 +26,9 @@ class Home extends React.Component<LoginProps, LoginState> {
             selectData: new Array<JSX.Element>(),
             selectedSelectData: new Array<string>(),
             table1Rows: this.initTable(),
-            table2Rows: this.initTable()
+            table1MetaRows: new Array<JSX.Element>(),
+            table2Rows: this.initTable(),
+            table2MetaRows: new Array<JSX.Element>()
         };
 
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -50,28 +55,26 @@ class Home extends React.Component<LoginProps, LoginState> {
         );
     }
 
-    buildMultiDataRow(position: String, name: String, sr: String, te: boolean, de: boolean, se: boolean) {
+    buildMultiDataRow(position: String, name: String, sr: String, te: number, de: number, se: number) {
         return (
             <tr>
                 <td>{position}</td>
                 <td>{name}</td>
                 <td>{sr}</td>
-                <td>{te}</td>
-                <td>{de}</td>
-                <td>{se}</td>
+                <td><span className={te == 0 ? "mif-not fg-red" : te == 1 ? "mif-checkmark fg-cobalt" : "mif-checkmark fg-green"}/></td>
+                <td><span className={de == 0 ? "mif-not fg-red" : de == 1 ? "mif-checkmark fg-cobalt" : "mif-checkmark fg-green"}/></td>
+                <td><span className={se == 0 ? "mif-not fg-red" : se == 1 ? "mif-checkmark fg-cobalt" : "mif-checkmark fg-green"}/></td>
             </tr>
         );
     }
 
-    getPositionForId(id: number) {
-        switch (id) {
-            case 0:
-                return "Tank";
-            case 1:
-                return "Dps";
-            case 2:
-                return "Support";
-        }
+    buildKVPDataRow(key: String, value: String) {
+        return (
+            <tr>
+                <td>{key}</td>
+                <td>{value}</td>
+            </tr>
+        );
     }
 
     componentDidMount() {
@@ -84,7 +87,7 @@ class Home extends React.Component<LoginProps, LoginState> {
                 response.data["api"]["usernameList"].forEach(function (value: Object, index: number) {
                     let key = Object.keys(value)[0];
                     // @ts-ignore
-                    mm.push(<option value={index + "_" + key}>{value[key]}</option>);
+                    mm.push(<option value={index + "#" + key}>{value[key]}</option>);
                 });
                 sState.setState({selectData: mm});
             } else {
@@ -95,9 +98,32 @@ class Home extends React.Component<LoginProps, LoginState> {
         });
     }
 
+    setDisabled(bool: Boolean) {
+        let sb = document.getElementById("sb");
+        let sl = document.getElementsByClassName("select")[0];
+        if (bool) {
+            // @ts-ignore
+            sb.classList.add("disabled");
+            // @ts-ignore
+            sl.classList.add("disabled");
+            this.setState({
+                table1Rows: this.initTable(),
+                table1MetaRows: new Array<JSX.Element>(),
+                table2Rows: this.initTable(),
+                table2MetaRows: new Array<JSX.Element>()
+            })
+        } else {
+            // @ts-ignore
+            sb.classList.remove("disabled");
+            // @ts-ignore
+            sl.classList.remove("disabled");
+        }
+    }
+
     async handleSubmit(e: FormEvent) {
         e.preventDefault();
 
+        this.setDisabled(true);
         await this.balance();
     }
 
@@ -109,7 +135,7 @@ class Home extends React.Component<LoginProps, LoginState> {
         for (let option of document.getElementsByTagName("select")[0].options) {
             if (option.selected) {
                 selectedData.push(option.value);
-                selected.add(Number.parseInt(option.value.split("_")[1]));
+                selected.add(Number.parseInt(option.value.split("#")[1]));
             }
         }
         console.log(selected)
@@ -122,14 +148,26 @@ class Home extends React.Component<LoginProps, LoginState> {
             if (response.status === 200) {
                 let team1List = new Array<JSX.Element>();
                 let team2List = new Array<JSX.Element>();
+
+                let team1Meta = new Array<JSX.Element>();
+                let team2Meta = new Array<JSX.Element>();
+
                 response.data["api"]["userList"].forEach(function (value: Object, index: number) {
+                    // @ts-ignore
+                    let position = Number.parseInt(value["position"]);
+                    // @ts-ignore
+                    let tpf = value["user"]["tankPreference"];
+                    // @ts-ignore
+                    let dpf = value["user"]["dpsPreference"];
+                    // @ts-ignore
+                    let spf = value["user"]["supportPreference"];
                     // @ts-ignore
                     if (Number.parseInt(value["team"]) === 1) {
                         // @ts-ignore
-                        team1List.push(ref.buildMultiDataRow(ref.getPositionForId(Number.parseInt(value["position"])), value["name"], value["positionSr"], true, true, true));
+                        team1List.push(ref.buildMultiDataRow(ref.getPositionForId(position), value["user"]["name"], ref.getPositionSr(position, value["user"]), tpf, dpf, spf));
                     } else {
                         // @ts-ignore
-                        team2List.push(ref.buildMultiDataRow(ref.getPositionForId(Number.parseInt(value["position"])), value["name"], value["positionSr"], true, true, true));
+                        team2List.push(ref.buildMultiDataRow(ref.getPositionForId(position), value["user"]["name"], ref.getPositionSr(position, value["user"]), tpf, dpf, spf));
                     }
                 });
                 while (team1List.length < 6) {
@@ -138,35 +176,86 @@ class Home extends React.Component<LoginProps, LoginState> {
                 while (team2List.length < 6) {
                     team2List.push(ref.buildBlankTableRow());
                 }
-                this.setState({table1Rows: team1List, table2Rows: team2List, selectedSelectData: selectedData});
+                // stats team 1
+                let av1Diff = response.data["api"]["balancerMeta"]["team1AverageSr"] - response.data["api"]["balancerMeta"]["team2AverageSr"];
+                let totalAv1Diff = response.data["api"]["balancerMeta"]["team1TotalAverageSr"] - response.data["api"]["balancerMeta"]["team2TotalAverageSr"];
+                team1Meta.push(ref.buildKVPDataRow("Average SR", response.data["api"]["balancerMeta"]["team1AverageSr"] + " (Δ " + av1Diff + ")"))
+                team1Meta.push(ref.buildKVPDataRow("└─ Total SR", response.data["api"]["balancerMeta"]["team1TotalSr"]))
+                team1Meta.push(ref.buildKVPDataRow("Average SR (All roles)", response.data["api"]["balancerMeta"]["team1TotalAverageSr"] + " (Δ " + totalAv1Diff + ")"))
+                team1Meta.push(ref.buildKVPDataRow("└─ Total SR (All roles)", response.data["api"]["balancerMeta"]["team1TotalSrDistribution"]))
+                team1Meta.push(ref.buildKVPDataRow("Adaptability (How well the team can adapt to playing different roles)", response.data["api"]["balancerMeta"]["team1Adaptability"] + "%"))
+                team1Meta.push(ref.buildKVPDataRow("├─ Tank Adaptability", response.data["api"]["balancerMeta"]["team1TankAdaptability"] + "%"))
+                team1Meta.push(ref.buildKVPDataRow("├─ DPS Adaptability", response.data["api"]["balancerMeta"]["team1DpsAdaptability"] + "%"))
+                team1Meta.push(ref.buildKVPDataRow("└─ Support Adaptability", response.data["api"]["balancerMeta"]["team1SupportAdaptability"] + "%"))
+                // stats team 2
+                let av2Diff = response.data["api"]["balancerMeta"]["team2AverageSr"] - response.data["api"]["balancerMeta"]["team1AverageSr"];
+                let totalAv2Diff = response.data["api"]["balancerMeta"]["team2TotalAverageSr"] - response.data["api"]["balancerMeta"]["team1TotalAverageSr"];
+                team2Meta.push(ref.buildKVPDataRow("Average SR", response.data["api"]["balancerMeta"]["team2AverageSr"] + " (Δ " + av2Diff + ")"))
+                team2Meta.push(ref.buildKVPDataRow("└─ Total SR", response.data["api"]["balancerMeta"]["team2TotalSr"]))
+                team2Meta.push(ref.buildKVPDataRow("Average SR (All roles)", response.data["api"]["balancerMeta"]["team2TotalAverageSr"] + " (Δ " + totalAv2Diff + ")"))
+                team2Meta.push(ref.buildKVPDataRow("└─ Total SR (All roles)", response.data["api"]["balancerMeta"]["team2TotalSrDistribution"]))
+                team2Meta.push(ref.buildKVPDataRow("Adaptability (How well the team can adapt to playing different roles)", response.data["api"]["balancerMeta"]["team2Adaptability"] + "%"))
+                team2Meta.push(ref.buildKVPDataRow("├─ Tank Adaptability", response.data["api"]["balancerMeta"]["team2TankAdaptability"] + "%"))
+                team2Meta.push(ref.buildKVPDataRow("├─ DPS Adaptability", response.data["api"]["balancerMeta"]["team2DpsAdaptability"] + "%"))
+                team2Meta.push(ref.buildKVPDataRow("└─ Support Adaptability", response.data["api"]["balancerMeta"]["team2SupportAdaptability"] + "%"))
+
+                this.setState({
+                    table1Rows: team1List,
+                    table2Rows: team2List,
+                    selectedSelectData: selectedData,
+                    table1MetaRows: team1Meta,
+                    table2MetaRows: team2Meta
+                });
             }
         } catch (e) {
-            let message = "";
-            if (e.message.endsWith("409")) {
-                message = "Invalid username or password"
-            } else {
-                message = "Invalid request"
-            }
+            console.log(e);
+            let message = "Invalid request";
             // @ts-ignore
             Notific8.create(message, {themeColor: 'ruby', life: 4000}).then((notification) => {
                 // open the notification
                 notification.open();
             });
         }
+        this.setDisabled(false);
+    }
+
+    getPositionForId(id: number) {
+        switch (id) {
+            case 0:
+                return "Tank";
+            case 1:
+                return "DPS";
+            case 2:
+                return "Support";
+        }
+    }
+
+    getPositionSr(position: number, user: Object) {
+        switch (position) {
+            case 0:
+                // @ts-ignore
+                return user["tankSr"];
+            case 1:
+                // @ts-ignore
+                return user["dpsSr"];
+            case 2:
+                // @ts-ignore
+                return user["supportSr"];
+        }
     }
 
     render() {
         return (
-            <div className="container container-mod">
-                <Select multiple={true} value={this.state.selectedSelectData} filter={true}>
-                        {this.state.selectData}
+            <div id="parent" className="container container-mod">
+                <Select multiple={true} value={this.state.selectedSelectData} filter={true} id="sl">
+                    {this.state.selectData}
                 </Select>
                 <form onSubmit={(e) => this.handleSubmit(e)}>
-                    <Button cls="success form-group form-control" title="Balance" type="submit"/>
+                    <Button id="sb" cls="success form-group form-control" title="Balance" type="submit"/>
                 </form>
                 <div className="grid m-0">
-                    <div className="row">
-                        <div className="cell-6">
+                    <div className="row m-0">
+                        <div className="cell-6 p-0 pr-2">
                             <table className="table striped table-border mt-4" data-role="table">
                                 <thead>
                                 <tr>
@@ -183,7 +272,7 @@ class Home extends React.Component<LoginProps, LoginState> {
                                 </tbody>
                             </table>
                         </div>
-                        <div className="cell-6">
+                        <div className="cell-6 p-0 pl-2">
                             <table className="table striped table-border mt-4" data-role="table">
                                 <thead>
                                 <tr>
@@ -202,6 +291,39 @@ class Home extends React.Component<LoginProps, LoginState> {
                         </div>
                     </div>
                 </div>
+                <Dropdown autoClose={false}>
+                    <button className="button warning outline">Balancer Metadata</button>
+                    <div className="grid m-0">
+                        <div className="row m-0">
+                            <div className="cell-6 p-0 pr-2">
+                                <table className="table striped table-border mt-4 mb-0" data-role="table">
+                                    <thead>
+                                    <tr>
+                                        <th>Key</th>
+                                        <th>Value</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {this.state.table1MetaRows}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div className="cell-6 p-0 pl-2">
+                                <table className="table striped table-border mt-4 mb-0" data-role="table">
+                                    <thead>
+                                    <tr>
+                                        <th>Key</th>
+                                        <th>Value</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {this.state.table2MetaRows}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </Dropdown>
             </div>
         );
     }

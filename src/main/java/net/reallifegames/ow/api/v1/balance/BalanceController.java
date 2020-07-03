@@ -61,6 +61,11 @@ public class BalanceController {
             context.result("Bad Request");
             return;
         }
+        if (!balanceRequest.validate()) {
+            context.status(400);
+            context.result("Bad Request");
+            return;
+        }
 
         final BalanceResponse balanceResponse = balanceRequest.getBalanceResponse(ApiController.apiResponse, dbModule);
         // Write json result

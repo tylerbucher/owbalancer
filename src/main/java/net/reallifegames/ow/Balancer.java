@@ -70,29 +70,9 @@ public class Balancer {
     public static String DOMAIN = "";
 
     /**
-     * The JWT secretKey auto initialize.
-     */
-    private static boolean SECRET_KEY_AUTO = true;
-
-    /**
-     * The JWT secretKey.
-     */
-    private static SecretKey SECRET_KEY;
-
-    /**
-     * The amount of time in the future the token will expire.
-     */
-    public static long JWT_EXPIRE_TIME = 604800000L;
-
-    /**
      * Static db module reference.
      */
     private static DbModule DB_MODULE;
-
-    /**
-     * Static list of hex characters.
-     */
-    private static final byte[] HEX_ARRAY = "0123456789ABCDEF".getBytes();
 
     /**
      * Main class for the Local Auth application.
@@ -134,29 +114,6 @@ public class Balancer {
         }));
 
         javalinApp.start(8080);
-    }
-
-    /**
-     * @param hexString the string to convert.
-     * @return the byte array for a hex string.
-     */
-    private static byte[] hexToBytes(@Nonnull final String hexString) {
-        final int length = hexString.length();
-        final byte[] byteArray = new byte[length / 2];
-        for (int i = 0, j = 0; i < length; i += 2, j++) {
-            byteArray[i / 2] = (byte) ((charToBase16(hexString.charAt(i)) << 4) + charToBase16(hexString.charAt(i + 1)));
-        }
-        return byteArray;
-    }
-
-    /**
-     * Quick converts a valid base 16 character to an int.
-     *
-     * @param c the character to convert.
-     * @return the character as a base 16 number.
-     */
-    private static int charToBase16(final char c) {
-        return c < 58 ? c - 48 : c - 55;
     }
 
     private static DbModule findDbModule(@Nonnull final String key) throws ClassNotFoundException {
