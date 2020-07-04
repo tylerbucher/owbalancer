@@ -7,7 +7,7 @@ RUN set -ex; \
     ./gradlew -q build ; \
     mv build/libs/OWBalancer.jar / ;
 
-FROM node:13-alpine AS client
+FROM node:13 AS client
 
 COPY src/javascript/resources/ui .
 
