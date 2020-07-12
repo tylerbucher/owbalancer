@@ -27,6 +27,7 @@ import io.javalin.http.Context;
 import net.reallifegames.ow.Balancer;
 import net.reallifegames.ow.DbModule;
 import net.reallifegames.ow.api.v1.ApiController;
+import net.reallifegames.ow.models.UserInfo;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -57,8 +58,22 @@ public class UsersController {
      * @throws IOException if the object could not be marshaled.
      */
     public static void getUsers(@Nonnull final Context context, @Nonnull final DbModule dbModule) throws IOException {
-        context.status(200);
-        // Set response payload
-        ApiController.jsonContextResponse(new UsersResponse(ApiController.apiResponse, dbModule.getUserList()), context);
+        final Integer param = context.pathParam(":id", Integer.class).getOrNull();
+        if(param == null || param == -1) {
+            context.status(200);
+            // Set response payload
+            ApiController.jsonContextResponse(new UsersResponse(ApiController.apiResponse, dbModule.getUserList(), dbModule.getUserNameList()), context);
+        } else {
+            final UserInfo userInfo = dbModule.getUserInfo(param);
+            if(userInfo == null) {
+                ApiController.LOGGER.debug("Api login controller request marshall error");
+                context.status(400);
+                context.result("Bad Request");
+                return;
+            }
+            context.status(200);
+            // Set response payload
+            ApiController.jsonContextResponse(new SingleUserResponse(ApiController.apiResponse, userInfo, dbModule.getNameListForId(param)), context);
+        }
     }
 }

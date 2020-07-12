@@ -4,7 +4,9 @@ import axios from "axios";
 import {Notific8} from 'notific8';
 import "../node_modules/notific8/src/sass/notific8.scss";
 // @ts-ignore
-import {Button, Dropdown, Select} from "metro4-react";
+import {Button, Dropdown, Select, MultiAction, MultiActionItem, Dialog} from "metro4-react";
+import AddPlayerDialog from "./components/AddPlayerDialog";
+import EditPlayerDialog from "./components/EditPlayerDialog";
 
 type LoginProps = {
     // using `interface` is also ok
@@ -16,9 +18,14 @@ type LoginState = {
     table1MetaRows?: Array<JSX.Element>;
     table2Rows?: Array<JSX.Element>;
     table2MetaRows?: Array<JSX.Element>;
+    showAddPlayerDialog?: boolean;
+    showEditPlayerDialog?: boolean;
+    editUserList?: Array<JSX.Element>;
 };
 
 class Home extends React.Component<LoginProps, LoginState> {
+
+
     constructor(props: LoginProps) {
         super(props);
 
@@ -28,10 +35,16 @@ class Home extends React.Component<LoginProps, LoginState> {
             table1Rows: this.initTable(),
             table1MetaRows: new Array<JSX.Element>(),
             table2Rows: this.initTable(),
-            table2MetaRows: new Array<JSX.Element>()
+            table2MetaRows: new Array<JSX.Element>(),
+            showAddPlayerDialog: false,
+            showEditPlayerDialog: false,
+            editUserList: new Array<JSX.Element>()
         };
 
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.fetchNewUsers = this.fetchNewUsers.bind(this);
+        this.openAddUserDialog = this.openAddUserDialog.bind(this);
+        this.openEditUserDialog = this.openEditUserDialog.bind(this);
     }
 
     initTable() {
@@ -78,23 +91,59 @@ class Home extends React.Component<LoginProps, LoginState> {
     }
 
     componentDidMount() {
+        this.getUserList(false);
+    }
+
+    fetchNewUsers() {
+        this.getUserList(true);
+    }
+
+    openAddUserDialog() {
+        this.setState({showAddPlayerDialog: true});
+    }
+
+    openEditUserDialog() {
+        this.setState({showEditPlayerDialog: true});
+    }
+
+    getUserList(notify: boolean) {
         let sState = this;
-        axios.get("/api/v1/users", {
+        axios.get("/api/v1/users/-1", {
             responseType: "json",
         }).then(function (response) {
             if (response.status === 200) {
                 let mm = new Array<JSX.Element>();
-                response.data["api"]["usernameList"].forEach(function (value: Object, index: number) {
-                    let key = Object.keys(value)[0];
+                let editUserList = new Array<JSX.Element>();
+                let index = 0;
+                response.data["api"]["users"].forEach(function (value: Object) {
                     // @ts-ignore
-                    mm.push(<option value={index + "#" + key}>{value[key]}</option>);
+                    let id = value["id"];
+                    // @ts-ignore
+                    editUserList.push(<option value={id}>{value["discordName"]}</option>)
+                    // @ts-ignore
+                    value["owNames"].forEach(function (value: Object) {
+                        let key = Object.keys(value)[0];
+                        // @ts-ignore
+                        mm.push(<option value={(index++) + "#" + id}>{value}</option>);
+                    });
                 });
-                sState.setState({selectData: mm});
-            } else {
-                console.log(response)
+                if(notify) {
+                    let message = "User list updated";
+                    // @ts-ignore
+                    Notific8.create(message, {themeColor: 'lime', life: 4000}).then((notification) => {
+                        // open the notification
+                        notification.open();
+                    });
+                }
+                sState.setState({selectData: mm, editUserList: editUserList});
             }
         }).catch(function (response) {
-            console.log(response)
+            let message = "Error getting users";
+            // @ts-ignore
+            Notific8.create(message, {themeColor: 'ruby', life: 4000}).then((notification) => {
+                // open the notification
+                notification.open();
+            });
         });
     }
 
@@ -138,7 +187,6 @@ class Home extends React.Component<LoginProps, LoginState> {
                 selected.add(Number.parseInt(option.value.split("#")[1]));
             }
         }
-        console.log(selected)
         try {
             const response = await axios.post("/api/v1/balance", {
                 userIds: Array.from(selected),
@@ -245,87 +293,103 @@ class Home extends React.Component<LoginProps, LoginState> {
     }
 
     render() {
-        return (
-            <div id="parent" className="container container-mod">
-                <Select multiple={true} value={this.state.selectedSelectData} filter={true} id="sl">
-                    {this.state.selectData}
-                </Select>
-                <form onSubmit={(e) => this.handleSubmit(e)}>
-                    <Button id="sb" cls="success form-group form-control" title="Balance" type="submit"/>
-                </form>
+        let ref = this;
+        let dialog = <div/>;
+        if(this.state.showAddPlayerDialog) {
+            dialog = <AddPlayerDialog onClose={()=>function () {
+                ref.setState({showAddPlayerDialog: false})
+            }} />;
+        } else if(this.state.showEditPlayerDialog) {
+            dialog = <EditPlayerDialog onClose={()=>function () {
+                ref.setState({showEditPlayerDialog: false})
+            }} data={this.state.editUserList}/>;
+        }
+        return <div id="parent" className="container container-mod">
+            <Select multiple={true} value={this.state.selectedSelectData} id="sl">
+                {this.state.selectData}
+            </Select>
+            <form onSubmit={(e) => this.handleSubmit(e)}>
+                <Button id="sb" cls="success form-group form-control" title="Balance" type="submit"/>
+            </form>
+            <div className="grid m-0">
+                <div className="row m-0">
+                    <div className="cell-6 p-0 pr-2">
+                        <table className="table striped table-border mt-4" data-role="table">
+                            <thead>
+                            <tr>
+                                <th>Role</th>
+                                <th>Username</th>
+                                <th>Sr</th>
+                                <th>Tank</th>
+                                <th>Dps</th>
+                                <th>Support</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {this.state.table1Rows}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="cell-6 p-0 pl-2">
+                        <table className="table striped table-border mt-4" data-role="table">
+                            <thead>
+                            <tr>
+                                <th>Role</th>
+                                <th>Username</th>
+                                <th>Sr</th>
+                                <th>Tank</th>
+                                <th>Dps</th>
+                                <th>Support</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {this.state.table2Rows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <Dropdown autoClose={false}>
+                <button className="button warning outline">Balancer Metadata</button>
                 <div className="grid m-0">
                     <div className="row m-0">
                         <div className="cell-6 p-0 pr-2">
-                            <table className="table striped table-border mt-4" data-role="table">
+                            <table className="table striped table-border mt-4 mb-0" data-role="table">
                                 <thead>
                                 <tr>
-                                    <th>Role</th>
-                                    <th>Username</th>
-                                    <th>Sr</th>
-                                    <th>Tank</th>
-                                    <th>Dps</th>
-                                    <th>Support</th>
+                                    <th>Key</th>
+                                    <th>Value</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {this.state.table1Rows}
+                                {this.state.table1MetaRows}
                                 </tbody>
                             </table>
                         </div>
                         <div className="cell-6 p-0 pl-2">
-                            <table className="table striped table-border mt-4" data-role="table">
+                            <table className="table striped table-border mt-4 mb-0" data-role="table">
                                 <thead>
                                 <tr>
-                                    <th>Role</th>
-                                    <th>Username</th>
-                                    <th>Sr</th>
-                                    <th>Tank</th>
-                                    <th>Dps</th>
-                                    <th>Support</th>
+                                    <th>Key</th>
+                                    <th>Value</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {this.state.table2Rows}
+                                {this.state.table2MetaRows}
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
-                <Dropdown autoClose={false}>
-                    <button className="button warning outline">Balancer Metadata</button>
-                    <div className="grid m-0">
-                        <div className="row m-0">
-                            <div className="cell-6 p-0 pr-2">
-                                <table className="table striped table-border mt-4 mb-0" data-role="table">
-                                    <thead>
-                                    <tr>
-                                        <th>Key</th>
-                                        <th>Value</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    {this.state.table1MetaRows}
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div className="cell-6 p-0 pl-2">
-                                <table className="table striped table-border mt-4 mb-0" data-role="table">
-                                    <thead>
-                                    <tr>
-                                        <th>Key</th>
-                                        <th>Value</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    {this.state.table2MetaRows}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </Dropdown>
-            </div>
-        );
+            </Dropdown>
+            <MultiAction icon="more-vert" cls="secondary" drop={'up'}>
+                <MultiActionItem icon="refresh" onClick={()=>this.fetchNewUsers()}/>
+                <MultiActionItem icon="user-plus" onClick={()=>this.openAddUserDialog()}/>
+                <MultiActionItem icon="users" onClick={()=>this.openEditUserDialog()}/>
+                <MultiActionItem icon="cog" className="disabled"/>
+            </MultiAction>
+            {dialog}
+        </div>;
     }
 }
 

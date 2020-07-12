@@ -21,50 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.reallifegames.ow.api.v1.users;
+package net.reallifegames.ow.api.v1.users.post;
 
 import net.reallifegames.ow.api.v1.ApiResponse;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
-/**
- * A standard users api fetch response structure.
- *
- * @author Tyler Bucher
- */
-class UsersResponse extends ApiResponse {
+public class UsersPostResponse extends ApiResponse {
 
     /**
-     * The list of users in this application.
+     * The return status message.
      */
-    public final List<UserObj> users;
+    public final String message;
 
     /**
      * Response constructor for Jackson json marshalling.
      *
-     * @param apiResponse  the root api response.
-     * @param usernameList list of users in this application.
+     * @param apiResponse the root api response.
+     * @param message     The return status message.
      */
-    public UsersResponse(@Nonnull final ApiResponse apiResponse,
-                         @Nonnull final List<Map.Entry<Integer, String>> usernameList,
-                         @Nonnull final Map<Integer, String> userList) {
+    public UsersPostResponse(@Nonnull final ApiResponse apiResponse, @Nonnull final String message) {
         super(apiResponse.version);
-        this.users = new ArrayList<>();
-        for (final Map.Entry<Integer, String> user : userList.entrySet()) {
-            this.users.add(new UserObj(user.getKey(), user.getValue(), getNames(user.getKey(), usernameList)));
-        }
-    }
-
-    private List<String> getNames(final int id, @Nonnull final List<Map.Entry<Integer, String>> usernameList) {
-        final List<String> names = new ArrayList<>();
-        for (final Map.Entry<Integer, String> entry : usernameList) {
-            if(id == entry.getKey()) {
-                names.add(entry.getValue());
-            }
-        }
-        return names;
+        this.message = message;
     }
 }

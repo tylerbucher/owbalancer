@@ -28,14 +28,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A module to handle all database functions in sql.
@@ -55,9 +53,40 @@ public abstract class SqlModule implements DbModule {
     private static final String QUERY_USER_LIST = "SELECT * FROM `alt_user_names`;";
 
     /**
+     * Sql query for getting all users.
+     */
+    private static final String QUERY_USER_NAMES_FOR_ID = "SELECT `name` FROM `alt_user_names` WHERE `id` = ?;";
+
+    /**
+     * Sql query for getting all users.
+     */
+    private static final String DELETE_USER_NAMES_FOR_ID = "DELETE FROM `alt_user_names` WHERE `id` = ?;";
+
+    /**
+     * Sql query for getting all users.
+     */
+    private static final String QUERY_SINGLE_USER = "SELECT * FROM `user_info` WHERE `id`=?;";
+
+    /**
      * Sql query for checking if a user exists.
      */
     private static final String QUERY_GET_USER_INFO = "SELECT * FROM `user_info` WHERE `id` IN ";
+
+    /**
+     * Sql query for checking if a user exists.
+     */
+    private static final String QUERY_USER_EXISTS = "SELECT `id` FROM `user_info` WHERE lower(`name`)=lower(?);";
+
+    /**
+     * Sql query for checking if a user exists.
+     */
+    private static final String QUERY_USER_NAMES = "SELECT `id`, `name` FROM `user_info`;";
+
+    private static final String INSERT_NEW_USER = "INSERT INTO `user_info`(`name`, `tank_pref`, `dps_pref`, `support_pref`, `tank_sr`, `dps_sr`, `support_sr`) VALUES (?,?,?,?,?,?,?);";
+
+    private static final String INSERT_NEW_OW_NAME = "INSERT INTO `alt_user_names`(`id`, `name`) VALUES (?, ?);";
+
+    private static final String UPDATE_USER_INFO = "UPDATE `user_info` SET `name`=?,`tank_pref`=?,`dps_pref`=?,`support_pref`=?,`tank_sr`=?,`dps_sr`=?,`support_sr`=? WHERE `id`=?;";
 
     @Override
     public void createTables(@Nonnull final String... tableStatements) {
@@ -129,6 +158,223 @@ public abstract class SqlModule implements DbModule {
             LOGGER.debug("Get user list sql error.", e);
         }
         return userList;
+    }
+
+    /**
+     * @return the list of users in the db.
+     */
+    @Override
+    public Map<Integer, String> getUserNameList() {
+        final Map<Integer, String> userMap = new HashMap<>();
+        try (final Connection connection = getConnection()) {
+            final PreparedStatement queryStatement = connection.prepareStatement(QUERY_USER_NAMES);
+            final ResultSet resultSet = queryStatement.executeQuery();
+            while (resultSet.next()) {
+                userMap.put(resultSet.getInt("id"), resultSet.getString("name"));
+            }
+            resultSet.close();
+            queryStatement.close();
+        } catch (SQLException e) {
+            LOGGER.debug("Get user list sql error.", e);
+        }
+        return userMap;
+    }
+
+    /**
+     * Checks to see if a user already exists.
+     *
+     * @param username the username to check.
+     * @return true if the user exists false otherwise.
+     */
+    @Override
+    public boolean userExists(@Nonnull final String username) {
+        boolean returnResult = true;
+        try (final Connection connection = getConnection()) {
+            final PreparedStatement queryStatement = connection.prepareStatement(QUERY_USER_EXISTS);
+            queryStatement.setString(1, username);
+            // Parse result information
+            final ResultSet result = queryStatement.executeQuery();
+            returnResult = result.next();
+            result.close();
+            queryStatement.close();
+        } catch (SQLException e) {
+            LOGGER.debug("Check if user exists sql error", e);
+        }
+        return returnResult;
+    }
+
+    /**
+     * Attempts to create a new user.
+     *
+     * @param username          name of the new user.
+     * @param tankSr
+     * @param tankPreference
+     * @param dpsSr
+     * @param dpsPreference
+     * @param supportSr
+     * @param supportPreference
+     * @return true if the user was created false otherwise.
+     */
+    @Override
+    public boolean createUser(@Nonnull final String username,
+                              final int tankSr,
+                              final int tankPreference,
+                              final int dpsSr,
+                              final int dpsPreference,
+                              final int supportSr,
+                              final int supportPreference) {
+        // Prep user INSERT query
+        try (final Connection connection = getConnection()) {
+            final PreparedStatement queryStatement = connection.prepareStatement(INSERT_NEW_USER);
+            // Set query data
+            queryStatement.setString(1, username);
+            queryStatement.setInt(2, tankPreference);
+            queryStatement.setInt(3, dpsPreference);
+            queryStatement.setInt(4, supportPreference);
+            queryStatement.setInt(5, tankSr);
+            queryStatement.setInt(6, dpsSr);
+            queryStatement.setInt(7, supportSr);
+            // Execute insert statement
+            queryStatement.executeUpdate();
+            queryStatement.close();
+        } catch (SQLException e) {
+            LOGGER.debug("Create user sql error", e);
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int getUserId(@Nonnull final String username) {
+        int id = -1;
+        try (final Connection connection = getConnection()) {
+            final PreparedStatement queryStatement = connection.prepareStatement(QUERY_USER_EXISTS);
+            queryStatement.setString(1, username);
+            // Parse result information
+            final ResultSet result = queryStatement.executeQuery();
+            if (result.next()) {
+                id = result.getInt("id");
+            }
+            result.close();
+            queryStatement.close();
+        } catch (SQLException e) {
+            LOGGER.debug("Get user list sql error.", e);
+        }
+        return id;
+    }
+
+    @Override
+    public boolean addOverwatchName(final int id, @Nonnull final String[] overwatchNames) {
+        // Prep user INSERT query
+        try (final Connection connection = getConnection()) {
+            final PreparedStatement queryStatement = connection.prepareStatement(INSERT_NEW_OW_NAME);
+            // Set query data
+            for (final String name : overwatchNames) {
+                queryStatement.setInt(1, id);
+                queryStatement.setString(2, name);
+                queryStatement.execute();
+            }
+            queryStatement.close();
+        } catch (SQLException e) {
+            LOGGER.debug("Create user sql error", e);
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    @Nullable
+    public UserInfo getUserInfo(int id) {
+        UserInfo userInfo = null;
+        try (final Connection connection = getConnection()) {
+            final PreparedStatement queryStatement = connection.prepareStatement(QUERY_SINGLE_USER);
+            queryStatement.setInt(1, id);
+            // Execute update
+            final ResultSet resultSet = queryStatement.executeQuery();
+            if (resultSet.next()) {
+                userInfo = new UserInfo(
+                        resultSet.getInt("id"),
+                        resultSet.getString("name"),
+                        resultSet.getInt("tank_pref"),
+                        resultSet.getInt("support_pref"),
+                        resultSet.getInt("dps_pref"),
+                        resultSet.getInt("tank_sr"),
+                        resultSet.getInt("support_sr"),
+                        resultSet.getInt("dps_sr")
+                );
+            }
+            resultSet.close();
+            queryStatement.close();
+        } catch (SQLException e) {
+            LOGGER.debug("Get user information sql error.", e);
+        }
+        return userInfo;
+    }
+
+    /**
+     * @param id
+     * @return the list of users in the db.
+     */
+    @Override
+    public List<String> getNameListForId(final int id) {
+        final List<String> nameList = new ArrayList<>();
+        try (final Connection connection = getConnection()) {
+            final PreparedStatement queryStatement = connection.prepareStatement(QUERY_USER_NAMES_FOR_ID);
+            queryStatement.setInt(1, id);
+            final ResultSet resultSet = queryStatement.executeQuery();
+            while (resultSet.next()) {
+                nameList.add(resultSet.getString("name"));
+            }
+            resultSet.close();
+            queryStatement.close();
+        } catch (SQLException e) {
+            LOGGER.debug("Get user list sql error.", e);
+        }
+        return nameList;
+    }
+
+    @Override
+    public boolean deleteOwNamesForId(int id) {
+        try (final Connection connection = getConnection()) {
+            final PreparedStatement queryStatement = connection.prepareStatement(DELETE_USER_NAMES_FOR_ID);
+            queryStatement.setInt(1, id);
+            queryStatement.executeUpdate();
+            queryStatement.close();
+        } catch (SQLException e) {
+            LOGGER.debug("Get user list sql error.", e);
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean updateUser(final int id,
+                              @Nonnull final String username,
+                              final int tankSr,
+                              final int tankPreference,
+                              final int dpsSr,
+                              final int dpsPreference, final int supportSr,
+                              final int supportPreference) {
+        // Prep user INSERT query
+        try (final Connection connection = getConnection()) {
+            final PreparedStatement queryStatement = connection.prepareStatement(UPDATE_USER_INFO);
+            // Set query data
+            queryStatement.setString(1, username);
+            queryStatement.setInt(2, tankPreference);
+            queryStatement.setInt(3, dpsPreference);
+            queryStatement.setInt(4, supportPreference);
+            queryStatement.setInt(5, tankSr);
+            queryStatement.setInt(6, dpsSr);
+            queryStatement.setInt(7, supportSr);
+            queryStatement.setInt(8, id);
+            // Execute insert statement
+            queryStatement.executeUpdate();
+            queryStatement.close();
+        } catch (SQLException e) {
+            LOGGER.debug("Create user sql error", e);
+            return false;
+        }
+        return true;
     }
 
     /**

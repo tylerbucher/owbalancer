@@ -32,6 +32,7 @@ import io.javalin.http.staticfiles.Location;
 import net.reallifegames.ow.api.v1.ApiController;
 import net.reallifegames.ow.api.v1.balance.BalanceController;
 import net.reallifegames.ow.api.v1.users.UsersController;
+import net.reallifegames.ow.api.v1.users.post.UsersPostController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,7 +110,8 @@ public class Balancer {
             // Root api path controller
             ApiBuilder.get("/", ApiController::getApiInformation);
             // List of users api controller
-            ApiBuilder.get("/users", UsersController::getUsers);
+            ApiBuilder.get("/users/:id", UsersController::getUsers);
+            ApiBuilder.post("/users/:id", UsersPostController::postNewUser);
             ApiBuilder.post("/balance", BalanceController::postBalance);
         }));
 

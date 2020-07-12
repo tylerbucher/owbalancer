@@ -26,6 +26,7 @@ package net.reallifegames.ow;
 import net.reallifegames.ow.models.UserInfo;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
@@ -58,4 +59,54 @@ public interface DbModule {
      * @return the list of users in the db.
      */
     List<Map.Entry<Integer, String>> getUserList();
+
+    /**
+     * @return the list of users in the db.
+     */
+    Map<Integer, String> getUserNameList();
+
+    /**
+     * Checks to see if a user already exists.
+     *
+     * @param username the username to check.
+     * @return true if the user exists false otherwise.
+     */
+    boolean userExists(@Nonnull final String username);
+
+    /**
+     * Attempts to create a new user.
+     *
+     * @param username name of the new user.
+     * @return true if the user was created false otherwise.
+     */
+    boolean createUser(@Nonnull final String username,
+                       final int tankSr,
+                       final int tankPreference,
+                       final int dpsSr,
+                       final int dpsPreference,
+                       final int supportSr,
+                       final int supportPreference);
+
+    int getUserId(@Nonnull final String username);
+
+    boolean addOverwatchName(final int id, @Nonnull final String[] overwatchNames);
+
+    @Nullable
+    UserInfo getUserInfo(final int id);
+
+    /**
+     * @return the list of users in the db.
+     */
+    List<String> getNameListForId(final int id);
+
+    boolean deleteOwNamesForId(final int id);
+
+    boolean updateUser(final int id,
+                       @Nonnull final String username,
+                       final int tankSr,
+                       final int tankPreference,
+                       final int dpsSr,
+                       final int dpsPreference,
+                       final int supportSr,
+                       final int supportPreference);
 }
