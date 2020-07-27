@@ -21,32 +21,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.reallifegames.ow.balancer;
+package net.reallifegames.ow.api.v1.users.delete;
 
-import net.reallifegames.ow.models.UserInfo;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import net.reallifegames.ow.DbModule;
 
 import javax.annotation.Nonnull;
 
-public class TeamSRBalancer {
+public class DeleteUserRequest {
 
-    public int team1Sr;
+    /**
+     * Requested username for new user.
+     */
+    private final int id;
 
-    public int team2Sr;
-
-    public float calcTeamSrDifference(final float div,
-                                             @Nonnull final int[] idArray,
-                                             @Nonnull final UserInfo[] userInfoList) {
-        team1Sr = getTeamSr(0, idArray, userInfoList);
-        team2Sr = getTeamSr(6, idArray, userInfoList);
-        return (((float) Math.min(team1Sr, team2Sr)) * div) / ((float) Math.max(team2Sr, team1Sr));
+    public DeleteUserRequest(@JsonProperty ("id") final int id) {
+        this.id = id;
     }
 
-    private int getTeamSr(final int offset, @Nonnull final int[] idArray, @Nonnull final UserInfo[] userInfoList) {
-        return userInfoList[idArray[offset]].tankSr +
-                userInfoList[idArray[offset + 1]].tankSr +
-                userInfoList[idArray[offset + 2]].dpsSr +
-                userInfoList[idArray[offset + 3]].dpsSr +
-                userInfoList[idArray[offset + 4]].supportSr +
-                userInfoList[idArray[offset + 5]].supportSr;
+    /**
+     * Attempts to create a new user.
+     *
+     * @param dbModule the module instance to use.
+     * @return true if the user was created false otherwise.
+     */
+    public boolean deletePlayer(@Nonnull final DbModule dbModule) {
+        return dbModule.deletePlayer(this.id);
     }
 }

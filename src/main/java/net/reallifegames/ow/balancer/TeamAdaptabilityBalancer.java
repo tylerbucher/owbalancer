@@ -37,11 +37,7 @@ public class TeamAdaptabilityBalancer {
                                                    @Nonnull final UserInfo[] userInfoList) {
         team1Adaptability = calcTeamAdaptability(0, idArray, userInfoList);
         team2Adaptability = calcTeamAdaptability(6, idArray, userInfoList);
-        if (team2Adaptability > team1Adaptability) {
-            return (((float) team1Adaptability) * div) / ((float) team2Adaptability);
-        } else {
-            return (((float) team2Adaptability) * div) / ((float) team1Adaptability);
-        }
+        return (((float) Math.min(team2Adaptability, team1Adaptability)) * div) / ((float) Math.max(team2Adaptability, team1Adaptability));
     }
 
     private int calcTeamAdaptability(final int offset, @Nonnull final int[] idArray, @Nonnull final UserInfo[] userInfoList) {

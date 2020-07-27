@@ -45,10 +45,7 @@ public class TeamRoleSRBalancer {
         final int team2Sr = team2TankSr + team2DpsSr + team2SupportSr;
 
         totalSRDifference = Math.abs(team1TankSr - team2TankSr) + Math.abs(team1DpsSr - team2DpsSr) + Math.abs(team1SupportSr - team2SupportSr);
-        if (team2Sr > team1Sr) {
-            return (((float) (team2Sr - totalSRDifference)) * div) / ((float) team2Sr);
-        } else {
-            return (((float) (team1Sr - totalSRDifference)) * div) / ((float) team1Sr);
-        }
+        final int maxSr = Math.max(team2Sr, team1Sr);
+        return (((float) (maxSr - totalSRDifference)) * div) / ((float) maxSr);
     }
 }

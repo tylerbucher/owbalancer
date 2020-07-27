@@ -30,6 +30,10 @@ import java.util.List;
 
 public class BalanceInspector {
 
+    public float balanceScore;
+
+    public float balanceTime;
+
     public int team1TotalSr;
 
     public int team1AverageSr;
@@ -88,6 +92,11 @@ public class BalanceInspector {
     public BalanceInspector setFromInspector(@Nonnull final TeamSRBalancer teamSRInspector) {
         this.team1TotalSr = teamSRInspector.team1Sr;
         this.team2TotalSr = teamSRInspector.team2Sr;
+        return this;
+    }
+
+    public BalanceInspector setFromInspector(final float score) {
+        this.balanceScore = score;
         return this;
     }
 

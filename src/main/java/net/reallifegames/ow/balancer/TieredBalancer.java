@@ -42,8 +42,6 @@ public class TieredBalancer {
     private final TeamRoleSRBalancer teamRoleSRBalancer = new TeamRoleSRBalancer();
     private final TeamSRBalancer teamSRBalancer = new TeamSRBalancer();
 
-    private final BalanceInspector balanceInspector = new BalanceInspector();
-
     public TieredBalancerResponse balancePlayers(@Nonnull final DbModule dbModule, @Nonnull final List<Integer> players) {
         final List<UserInfo> userInfoList = dbModule.getUserResponses(players.stream().mapToInt(i->i).toArray());
         final int[] balanceArray = new int[12];
@@ -54,13 +52,8 @@ public class TieredBalancer {
         }
 
         long start = System.currentTimeMillis();
-        System.out.println(start);
-
         permute(balanceArray, 0);
-
         long end = System.currentTimeMillis();
-        System.out.println(end);
-        System.out.println(((float) (end - start)) / 1000.0f);
 
         final List<BalancedPlayer> balancedPlayerList = new ArrayList<>();
         for (int i = 0; i < 12; i++) {
@@ -70,6 +63,7 @@ public class TieredBalancer {
                 balancedPlayerList.add(new BalancedPlayer(i < 6 ? 1 : 2, pos, userInfo));
             }
         }
+        teamBalanceResult.getBalanceInspector().balanceTime = ((float) (end - start)) / 1000.0f;
         return new TieredBalancerResponse(balancedPlayerList, teamBalanceResult.getBalanceInspector());
     }
 
@@ -99,6 +93,7 @@ public class TieredBalancer {
                 teamBalanceResult.setScore(total);
                 teamBalanceResult.setTeam(arr);
                 teamBalanceResult.getBalanceInspector()
+                        .setFromInspector(total)
                         .setFromInspector(teamSRBalancer)
                         .setFromInspector(teamAdaptabilityBalancer)
                         .setFromInspector(teamRoleSRBalancer)

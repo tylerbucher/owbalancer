@@ -88,6 +88,8 @@ public abstract class SqlModule implements DbModule {
 
     private static final String UPDATE_USER_INFO = "UPDATE `user_info` SET `name`=?,`tank_pref`=?,`dps_pref`=?,`support_pref`=?,`tank_sr`=?,`dps_sr`=?,`support_sr`=? WHERE `id`=?;";
 
+    private static final String DELETE_USER_INFO = "DELETE FROM `user_info` WHERE `id`=?;";
+
     @Override
     public void createTables(@Nonnull final String... tableStatements) {
         try (final Connection connection = getConnection()) {
@@ -372,6 +374,30 @@ public abstract class SqlModule implements DbModule {
             queryStatement.close();
         } catch (SQLException e) {
             LOGGER.debug("Create user sql error", e);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Checks to see if a user already exists.
+     *
+     * @param id the id to check.
+     * @return true if the user exists false otherwise.
+     */
+    @Override
+    public boolean deletePlayer(final int id) {
+        try (final Connection connection = getConnection()) {
+            final PreparedStatement queryStatement = connection.prepareStatement(DELETE_USER_INFO);
+            queryStatement.setInt(1, id);
+            queryStatement.execute();
+            queryStatement.close();
+            final PreparedStatement queryStatement2 = connection.prepareStatement(DELETE_USER_NAMES_FOR_ID);
+            queryStatement2.setInt(1, id);
+            queryStatement2.execute();
+            queryStatement2.close();
+        } catch (SQLException e) {
+            LOGGER.debug("Delete user sql error", e);
             return false;
         }
         return true;

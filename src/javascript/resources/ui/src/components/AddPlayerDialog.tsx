@@ -9,6 +9,7 @@ import {Checkbox, Dialog, TagInput, Button} from "metro4-react";
 type AddPlayerDialogProps = {
     // using `interface` is also ok
     onClose: any
+    onUpdate: any
 };
 type AddPlayerDialogState = {
     tankPref?: number;
@@ -98,6 +99,9 @@ class AddPlayerDialog extends React.Component<AddPlayerDialogProps, AddPlayerDia
             // open the notification
             notification.open();
         });
+        if (color === "lime") {
+            this.props.onUpdate();
+        }
     }
 
     handleUsernameChange(event: React.FormEvent<HTMLInputElement>) {

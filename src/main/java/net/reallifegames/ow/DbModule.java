@@ -74,6 +74,14 @@ public interface DbModule {
     boolean userExists(@Nonnull final String username);
 
     /**
+     * Checks to see if a user already exists.
+     *
+     * @param id the id to check.
+     * @return true if the user exists false otherwise.
+     */
+    boolean deletePlayer(final int id);
+
+    /**
      * Attempts to create a new user.
      *
      * @param username name of the new user.

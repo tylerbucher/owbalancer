@@ -227,6 +227,7 @@ class Home extends React.Component<LoginProps, LoginState> {
                 // stats team 1
                 let av1Diff = response.data["api"]["balancerMeta"]["team1AverageSr"] - response.data["api"]["balancerMeta"]["team2AverageSr"];
                 let totalAv1Diff = response.data["api"]["balancerMeta"]["team1TotalAverageSr"] - response.data["api"]["balancerMeta"]["team2TotalAverageSr"];
+                team1Meta.push(ref.buildKVPDataRow("Balance Score", response.data["api"]["balancerMeta"]["balanceScore"]))
                 team1Meta.push(ref.buildKVPDataRow("Average SR", response.data["api"]["balancerMeta"]["team1AverageSr"] + " (Δ " + av1Diff + ")"))
                 team1Meta.push(ref.buildKVPDataRow("└─ Total SR", response.data["api"]["balancerMeta"]["team1TotalSr"]))
                 team1Meta.push(ref.buildKVPDataRow("Average SR (All roles)", response.data["api"]["balancerMeta"]["team1TotalAverageSr"] + " (Δ " + totalAv1Diff + ")"))
@@ -238,6 +239,7 @@ class Home extends React.Component<LoginProps, LoginState> {
                 // stats team 2
                 let av2Diff = response.data["api"]["balancerMeta"]["team2AverageSr"] - response.data["api"]["balancerMeta"]["team1AverageSr"];
                 let totalAv2Diff = response.data["api"]["balancerMeta"]["team2TotalAverageSr"] - response.data["api"]["balancerMeta"]["team1TotalAverageSr"];
+                team2Meta.push(ref.buildKVPDataRow("Balance Time", response.data["api"]["balancerMeta"]["balanceTime"] + "s"))
                 team2Meta.push(ref.buildKVPDataRow("Average SR", response.data["api"]["balancerMeta"]["team2AverageSr"] + " (Δ " + av2Diff + ")"))
                 team2Meta.push(ref.buildKVPDataRow("└─ Total SR", response.data["api"]["balancerMeta"]["team2TotalSr"]))
                 team2Meta.push(ref.buildKVPDataRow("Average SR (All roles)", response.data["api"]["balancerMeta"]["team2TotalAverageSr"] + " (Δ " + totalAv2Diff + ")"))
@@ -292,17 +294,21 @@ class Home extends React.Component<LoginProps, LoginState> {
         }
     }
 
+    call() {
+        console.log("call");
+    }
+
     render() {
         let ref = this;
         let dialog = <div/>;
         if(this.state.showAddPlayerDialog) {
             dialog = <AddPlayerDialog onClose={()=>function () {
                 ref.setState({showAddPlayerDialog: false})
-            }} />;
+            }} onUpdate={this.fetchNewUsers} />;
         } else if(this.state.showEditPlayerDialog) {
             dialog = <EditPlayerDialog onClose={()=>function () {
                 ref.setState({showEditPlayerDialog: false})
-            }} data={this.state.editUserList}/>;
+            }} data={this.state.editUserList} onUpdate={this.fetchNewUsers}/>;
         }
         return <div id="parent" className="container container-mod">
             <Select multiple={true} value={this.state.selectedSelectData} id="sl">
