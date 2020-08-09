@@ -39,9 +39,9 @@ public class BalanceResponse extends ApiResponse {
     /**
      * The list of users in this application.
      */
-    public final List<BalancedPlayer> userList;
+    public final List<List<BalancedPlayer>> userList;
 
-    public final BalanceInspector balancerMeta;
+    public final List<BalanceInspector> balancerMeta;
 
     /**
      * Response constructor for Jackson json marshalling.
@@ -49,7 +49,7 @@ public class BalanceResponse extends ApiResponse {
      * @param apiResponse the root api response.
      * @param userList    list of users in this application.
      */
-    public BalanceResponse(@Nonnull final ApiResponse apiResponse, @Nonnull final List<BalancedPlayer> userList, @Nonnull final BalanceInspector balanceMeta) {
+    public BalanceResponse(@Nonnull final ApiResponse apiResponse, @Nonnull final List<List<BalancedPlayer>> userList, @Nonnull final List<BalanceInspector> balanceMeta) {
         super(apiResponse.version);
         this.userList = userList;
         this.balancerMeta = balanceMeta;

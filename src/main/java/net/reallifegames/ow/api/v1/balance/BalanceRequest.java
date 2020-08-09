@@ -64,6 +64,6 @@ public class BalanceRequest {
      */
     public BalanceResponse getBalanceResponse(@Nonnull final ApiResponse apiResponse, @Nonnull final DbModule dbModule) {
         final TieredBalancer.TieredBalancerResponse tieredBalancerResponse = (new TieredBalancer()).balancePlayers(dbModule, users);
-        return new BalanceResponse(apiResponse, tieredBalancerResponse.userInfoList, tieredBalancerResponse.balanceInspector);
+        return new BalanceResponse(apiResponse, tieredBalancerResponse.userInfoLists, tieredBalancerResponse.balanceInspectorList);
     }
 }

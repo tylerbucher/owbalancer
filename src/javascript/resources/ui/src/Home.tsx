@@ -4,9 +4,10 @@ import axios from "axios";
 import {Notific8} from 'notific8';
 import "../node_modules/notific8/src/sass/notific8.scss";
 // @ts-ignore
-import {Button, Dropdown, Select, MultiAction, MultiActionItem, Dialog} from "metro4-react";
+import {Button, Dropdown, MultiAction, MultiActionItem, Select} from "metro4-react";
 import AddPlayerDialog from "./components/AddPlayerDialog";
 import EditPlayerDialog from "./components/EditPlayerDialog";
+import BalanceTablePage from "./models/BalanceTablePage";
 
 type LoginProps = {
     // using `interface` is also ok
@@ -14,10 +15,8 @@ type LoginProps = {
 type LoginState = {
     selectData?: Array<JSX.Element>;
     selectedSelectData?: Array<string>;
-    table1Rows?: Array<JSX.Element>;
-    table1MetaRows?: Array<JSX.Element>;
-    table2Rows?: Array<JSX.Element>;
-    table2MetaRows?: Array<JSX.Element>;
+    tablePages: Array<BalanceTablePage>;
+    selectedPage: number;
     showAddPlayerDialog?: boolean;
     showEditPlayerDialog?: boolean;
     editUserList?: Array<JSX.Element>;
@@ -29,13 +28,13 @@ class Home extends React.Component<LoginProps, LoginState> {
     constructor(props: LoginProps) {
         super(props);
 
+        let tablePage = new Array<BalanceTablePage>();
+        tablePage.push(new BalanceTablePage(this.initTable(), new Array<JSX.Element>(), this.initTable(), new Array<JSX.Element>()));
         this.state = {
             selectData: new Array<JSX.Element>(),
             selectedSelectData: new Array<string>(),
-            table1Rows: this.initTable(),
-            table1MetaRows: new Array<JSX.Element>(),
-            table2Rows: this.initTable(),
-            table2MetaRows: new Array<JSX.Element>(),
+            tablePages: tablePage,
+            selectedPage: 0,
             showAddPlayerDialog: false,
             showEditPlayerDialog: false,
             editUserList: new Array<JSX.Element>()
@@ -74,9 +73,15 @@ class Home extends React.Component<LoginProps, LoginState> {
                 <td>{position}</td>
                 <td>{name}</td>
                 <td>{sr}</td>
-                <td><span className={te == 0 ? "mif-not fg-red" : te == 1 ? "mif-checkmark fg-cobalt" : "mif-checkmark fg-green"}/></td>
-                <td><span className={de == 0 ? "mif-not fg-red" : de == 1 ? "mif-checkmark fg-cobalt" : "mif-checkmark fg-green"}/></td>
-                <td><span className={se == 0 ? "mif-not fg-red" : se == 1 ? "mif-checkmark fg-cobalt" : "mif-checkmark fg-green"}/></td>
+                <td><span
+                    className={te == 0 ? "mif-not fg-red" : te == 1 ? "mif-checkmark fg-cobalt" : "mif-checkmark fg-green"}/>
+                </td>
+                <td><span
+                    className={de == 0 ? "mif-not fg-red" : de == 1 ? "mif-checkmark fg-cobalt" : "mif-checkmark fg-green"}/>
+                </td>
+                <td><span
+                    className={se == 0 ? "mif-not fg-red" : se == 1 ? "mif-checkmark fg-cobalt" : "mif-checkmark fg-green"}/>
+                </td>
             </tr>
         );
     }
@@ -127,7 +132,7 @@ class Home extends React.Component<LoginProps, LoginState> {
                         mm.push(<option value={(index++) + "#" + id}>{value}</option>);
                     });
                 });
-                if(notify) {
+                if (notify) {
                     let message = "User list updated";
                     // @ts-ignore
                     Notific8.create(message, {themeColor: 'lime', life: 4000}).then((notification) => {
@@ -156,10 +161,7 @@ class Home extends React.Component<LoginProps, LoginState> {
             // @ts-ignore
             sl.classList.add("disabled");
             this.setState({
-                table1Rows: this.initTable(),
-                table1MetaRows: new Array<JSX.Element>(),
-                table2Rows: this.initTable(),
-                table2MetaRows: new Array<JSX.Element>()
+                selectedPage: 0
             })
         } else {
             // @ts-ignore
@@ -194,67 +196,77 @@ class Home extends React.Component<LoginProps, LoginState> {
                 responseType: "json",
             });
             if (response.status === 200) {
-                let team1List = new Array<JSX.Element>();
-                let team2List = new Array<JSX.Element>();
-
-                let team1Meta = new Array<JSX.Element>();
-                let team2Meta = new Array<JSX.Element>();
-
-                response.data["api"]["userList"].forEach(function (value: Object, index: number) {
-                    // @ts-ignore
-                    let position = Number.parseInt(value["position"]);
-                    // @ts-ignore
-                    let tpf = value["user"]["tankPreference"];
-                    // @ts-ignore
-                    let dpf = value["user"]["dpsPreference"];
-                    // @ts-ignore
-                    let spf = value["user"]["supportPreference"];
-                    // @ts-ignore
-                    if (Number.parseInt(value["team"]) === 1) {
+                let dataList = new Array<BalanceTablePage>();
+                dataList.push(new BalanceTablePage(this.initTable(), new Array<JSX.Element>(), this.initTable(), new Array<JSX.Element>()));
+                response.data["api"]["userList"].forEach(function (valList: Array<any>, index: number) {
+                    let team1List = new Array<JSX.Element>();
+                    let team2List = new Array<JSX.Element>();
+                    valList.forEach(function (value: Object, index: number) {
                         // @ts-ignore
-                        team1List.push(ref.buildMultiDataRow(ref.getPositionForId(position), value["user"]["name"], ref.getPositionSr(position, value["user"]), tpf, dpf, spf));
-                    } else {
+                        let position = Number.parseInt(value["position"]);
                         // @ts-ignore
-                        team2List.push(ref.buildMultiDataRow(ref.getPositionForId(position), value["user"]["name"], ref.getPositionSr(position, value["user"]), tpf, dpf, spf));
+                        let tpf = value["user"]["tankPreference"];
+                        // @ts-ignore
+                        let dpf = value["user"]["dpsPreference"];
+                        // @ts-ignore
+                        let spf = value["user"]["supportPreference"];
+                        // @ts-ignore
+                        if (Number.parseInt(value["team"]) === 1) {
+                            // @ts-ignore
+                            team1List.push(ref.buildMultiDataRow(ref.getPositionForId(position), value["user"]["name"], ref.getPositionSr(position, value["user"]), tpf, dpf, spf));
+                        } else {
+                            // @ts-ignore
+                            team2List.push(ref.buildMultiDataRow(ref.getPositionForId(position), value["user"]["name"], ref.getPositionSr(position, value["user"]), tpf, dpf, spf));
+                        }
+                    });
+                    while (team1List.length < 6) {
+                        team1List.push(ref.buildBlankTableRow());
                     }
+                    while (team2List.length < 6) {
+                        team2List.push(ref.buildBlankTableRow());
+                    }
+                    dataList.push(new BalanceTablePage(team1List, new Array<JSX.Element>(), team2List, new Array<JSX.Element>()))
                 });
-                while (team1List.length < 6) {
-                    team1List.push(ref.buildBlankTableRow());
-                }
-                while (team2List.length < 6) {
-                    team2List.push(ref.buildBlankTableRow());
-                }
-                // stats team 1
-                let av1Diff = response.data["api"]["balancerMeta"]["team1AverageSr"] - response.data["api"]["balancerMeta"]["team2AverageSr"];
-                let totalAv1Diff = response.data["api"]["balancerMeta"]["team1TotalAverageSr"] - response.data["api"]["balancerMeta"]["team2TotalAverageSr"];
-                team1Meta.push(ref.buildKVPDataRow("Balance Score", response.data["api"]["balancerMeta"]["balanceScore"]))
-                team1Meta.push(ref.buildKVPDataRow("Average SR", response.data["api"]["balancerMeta"]["team1AverageSr"] + " (Δ " + av1Diff + ")"))
-                team1Meta.push(ref.buildKVPDataRow("└─ Total SR", response.data["api"]["balancerMeta"]["team1TotalSr"]))
-                team1Meta.push(ref.buildKVPDataRow("Average SR (All roles)", response.data["api"]["balancerMeta"]["team1TotalAverageSr"] + " (Δ " + totalAv1Diff + ")"))
-                team1Meta.push(ref.buildKVPDataRow("└─ Total SR (All roles)", response.data["api"]["balancerMeta"]["team1TotalSrDistribution"]))
-                team1Meta.push(ref.buildKVPDataRow("Adaptability (How well the team can adapt to playing different roles)", response.data["api"]["balancerMeta"]["team1Adaptability"] + "%"))
-                team1Meta.push(ref.buildKVPDataRow("├─ Tank Adaptability", response.data["api"]["balancerMeta"]["team1TankAdaptability"] + "%"))
-                team1Meta.push(ref.buildKVPDataRow("├─ DPS Adaptability", response.data["api"]["balancerMeta"]["team1DpsAdaptability"] + "%"))
-                team1Meta.push(ref.buildKVPDataRow("└─ Support Adaptability", response.data["api"]["balancerMeta"]["team1SupportAdaptability"] + "%"))
-                // stats team 2
-                let av2Diff = response.data["api"]["balancerMeta"]["team2AverageSr"] - response.data["api"]["balancerMeta"]["team1AverageSr"];
-                let totalAv2Diff = response.data["api"]["balancerMeta"]["team2TotalAverageSr"] - response.data["api"]["balancerMeta"]["team1TotalAverageSr"];
-                team2Meta.push(ref.buildKVPDataRow("Balance Time", response.data["api"]["balancerMeta"]["balanceTime"] + "s"))
-                team2Meta.push(ref.buildKVPDataRow("Average SR", response.data["api"]["balancerMeta"]["team2AverageSr"] + " (Δ " + av2Diff + ")"))
-                team2Meta.push(ref.buildKVPDataRow("└─ Total SR", response.data["api"]["balancerMeta"]["team2TotalSr"]))
-                team2Meta.push(ref.buildKVPDataRow("Average SR (All roles)", response.data["api"]["balancerMeta"]["team2TotalAverageSr"] + " (Δ " + totalAv2Diff + ")"))
-                team2Meta.push(ref.buildKVPDataRow("└─ Total SR (All roles)", response.data["api"]["balancerMeta"]["team2TotalSrDistribution"]))
-                team2Meta.push(ref.buildKVPDataRow("Adaptability (How well the team can adapt to playing different roles)", response.data["api"]["balancerMeta"]["team2Adaptability"] + "%"))
-                team2Meta.push(ref.buildKVPDataRow("├─ Tank Adaptability", response.data["api"]["balancerMeta"]["team2TankAdaptability"] + "%"))
-                team2Meta.push(ref.buildKVPDataRow("├─ DPS Adaptability", response.data["api"]["balancerMeta"]["team2DpsAdaptability"] + "%"))
-                team2Meta.push(ref.buildKVPDataRow("└─ Support Adaptability", response.data["api"]["balancerMeta"]["team2SupportAdaptability"] + "%"))
+                response.data["api"]["balancerMeta"].forEach(function (val: any, index: number) {
+                    let team1Meta = new Array<JSX.Element>();
+                    let team2Meta = new Array<JSX.Element>();
+                    // stats team 1
+                    let av1Diff = val["team1AverageSr"] - val["team2AverageSr"];
+                    let totalAv1Diff = val["team1TotalAverageSr"] - val["team2TotalAverageSr"];
+                    team1Meta.push(ref.buildKVPDataRow("Balance Score", val["balanceScore"]))
+                    team1Meta.push(ref.buildKVPDataRow("Average SR", val["team1AverageSr"] + " (Δ " + av1Diff + ")"))
+                    team1Meta.push(ref.buildKVPDataRow("└─ Total SR", val["team1TotalSr"]))
+                    team1Meta.push(ref.buildKVPDataRow("Average SR (All roles)", val["team1TotalAverageSr"] + " (Δ " + totalAv1Diff + ")"))
+                    team1Meta.push(ref.buildKVPDataRow("└─ Total SR (All roles)", val["team1TotalSrDistribution"]))
+                    team1Meta.push(ref.buildKVPDataRow("Adaptability (How well the team can adapt to playing different roles)", val["team1Adaptability"] + "%"))
+                    team1Meta.push(ref.buildKVPDataRow("├─ Tank Adaptability", val["team1TankAdaptability"] + "%"))
+                    team1Meta.push(ref.buildKVPDataRow("├─ DPS Adaptability", val["team1DpsAdaptability"] + "%"))
+                    team1Meta.push(ref.buildKVPDataRow("└─ Support Adaptability", val["team1SupportAdaptability"] + "%"))
+                    // stats team 2
+                    let av2Diff = val["team2AverageSr"] - val["team1AverageSr"];
+                    let totalAv2Diff = val["team2TotalAverageSr"] - val["team1TotalAverageSr"];
+                    team2Meta.push(ref.buildKVPDataRow("Balance Time", val["balanceTime"] + "s"))
+                    team2Meta.push(ref.buildKVPDataRow("Average SR", val["team2AverageSr"] + " (Δ " + av2Diff + ")"))
+                    team2Meta.push(ref.buildKVPDataRow("└─ Total SR", val["team2TotalSr"]))
+                    team2Meta.push(ref.buildKVPDataRow("Average SR (All roles)", val["team2TotalAverageSr"] + " (Δ " + totalAv2Diff + ")"))
+                    team2Meta.push(ref.buildKVPDataRow("└─ Total SR (All roles)", val["team2TotalSrDistribution"]))
+                    team2Meta.push(ref.buildKVPDataRow("Adaptability (How well the team can adapt to playing different roles)", val["team2Adaptability"] + "%"))
+                    team2Meta.push(ref.buildKVPDataRow("├─ Tank Adaptability", val["team2TankAdaptability"] + "%"))
+                    team2Meta.push(ref.buildKVPDataRow("├─ DPS Adaptability", val["team2DpsAdaptability"] + "%"))
+                    team2Meta.push(ref.buildKVPDataRow("└─ Support Adaptability", val["team2SupportAdaptability"] + "%"))
+
+                    dataList[index + 1].table1MetaRows = team1Meta;
+                    dataList[index + 1].table2MetaRows = team2Meta;
+                });
+
+
+                console.log(dataList);
+
 
                 this.setState({
-                    table1Rows: team1List,
-                    table2Rows: team2List,
                     selectedSelectData: selectedData,
-                    table1MetaRows: team1Meta,
-                    table2MetaRows: team2Meta
+                    tablePages: dataList,
+                    selectedPage: 1
                 });
             }
         } catch (e) {
@@ -298,15 +310,21 @@ class Home extends React.Component<LoginProps, LoginState> {
         console.log("call");
     }
 
+    changeTablePage(val: number) {
+        if (val < this.state.tablePages.length && val > 0) {
+            this.setState({selectedPage: val});
+        }
+    }
+
     render() {
         let ref = this;
         let dialog = <div/>;
-        if(this.state.showAddPlayerDialog) {
-            dialog = <AddPlayerDialog onClose={()=>function () {
+        if (this.state.showAddPlayerDialog) {
+            dialog = <AddPlayerDialog onClose={() => function () {
                 ref.setState({showAddPlayerDialog: false})
-            }} onUpdate={this.fetchNewUsers} />;
-        } else if(this.state.showEditPlayerDialog) {
-            dialog = <EditPlayerDialog onClose={()=>function () {
+            }} onUpdate={this.fetchNewUsers}/>;
+        } else if (this.state.showEditPlayerDialog) {
+            dialog = <EditPlayerDialog onClose={() => function () {
                 ref.setState({showEditPlayerDialog: false})
             }} data={this.state.editUserList} onUpdate={this.fetchNewUsers}/>;
         }
@@ -332,7 +350,7 @@ class Home extends React.Component<LoginProps, LoginState> {
                             </tr>
                             </thead>
                             <tbody>
-                            {this.state.table1Rows}
+                            {this.state.tablePages[this.state.selectedPage].table1Rows}
                             </tbody>
                         </table>
                     </div>
@@ -349,12 +367,35 @@ class Home extends React.Component<LoginProps, LoginState> {
                             </tr>
                             </thead>
                             <tbody>
-                            {this.state.table2Rows}
+                            {this.state.tablePages[this.state.selectedPage].table2Rows}
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
+            <ul className="pagination">
+                <li className={"page-item service prev-page "+ (this.state.selectedPage === 1 ? "disabled" : "")}><a className="page-link"
+                                                                        onClick={() => this.changeTablePage(this.state.selectedPage - 1)}>Prev</a>
+                </li>
+                <li className={"page-item " + (this.state.selectedPage === 1 ? "active" : "")}><a className="page-link"
+                                                                                                  onClick={() => this.changeTablePage(1)}>1</a>
+                </li>
+                <li className={"page-item " + (this.state.selectedPage === 2 ? "active" : "")}><a className="page-link"
+                                                                                                  onClick={() => this.changeTablePage(2)}>2</a>
+                </li>
+                <li className={"page-item " + (this.state.selectedPage === 3 ? "active" : "")}><a className="page-link"
+                                                                                                  onClick={() => this.changeTablePage(3)}>3</a>
+                </li>
+                <li className={"page-item " + (this.state.selectedPage === 4 ? "active" : "")}><a className="page-link"
+                                                                                                  onClick={() => this.changeTablePage(4)}>4</a>
+                </li>
+                <li className={"page-item " + (this.state.selectedPage === 5 ? "active" : "")}><a className="page-link"
+                                                                                                  onClick={() => this.changeTablePage(5)}>5</a>
+                </li>
+                <li className={"page-item service next-page "+ (this.state.selectedPage === 5 ? "disabled" : "")}><a className="page-link"
+                                                               onClick={() => this.changeTablePage(this.state.selectedPage + 1)}>Next</a>
+                </li>
+            </ul>
             <Dropdown autoClose={false}>
                 <button className="button warning outline">Balancer Metadata</button>
                 <div className="grid m-0">
@@ -368,7 +409,7 @@ class Home extends React.Component<LoginProps, LoginState> {
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {this.state.table1MetaRows}
+                                {this.state.tablePages[this.state.selectedPage].table1MetaRows}
                                 </tbody>
                             </table>
                         </div>
@@ -381,7 +422,7 @@ class Home extends React.Component<LoginProps, LoginState> {
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {this.state.table2MetaRows}
+                                {this.state.tablePages[this.state.selectedPage].table2MetaRows}
                                 </tbody>
                             </table>
                         </div>
@@ -389,9 +430,9 @@ class Home extends React.Component<LoginProps, LoginState> {
                 </div>
             </Dropdown>
             <MultiAction icon="more-vert" cls="secondary" drop={'up'}>
-                <MultiActionItem icon="refresh" onClick={()=>this.fetchNewUsers()}/>
-                <MultiActionItem icon="user-plus" onClick={()=>this.openAddUserDialog()}/>
-                <MultiActionItem icon="users" onClick={()=>this.openEditUserDialog()}/>
+                <MultiActionItem icon="refresh" onClick={() => this.fetchNewUsers()}/>
+                <MultiActionItem icon="user-plus" onClick={() => this.openAddUserDialog()}/>
+                <MultiActionItem icon="users" onClick={() => this.openEditUserDialog()}/>
                 <MultiActionItem icon="cog" className="disabled"/>
             </MultiAction>
             {dialog}

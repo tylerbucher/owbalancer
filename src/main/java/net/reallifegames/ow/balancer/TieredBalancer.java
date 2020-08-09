@@ -34,13 +34,19 @@ import java.util.List;
 
 public class TieredBalancer {
 
-    private final TeamBalanceResult teamBalanceResult = new TeamBalanceResult(-1, new int[12]);
+    private final List<TeamBalanceResult> teamBalanceResultList = new ArrayList<>();
     private final UserInfo[] userInfoArray = new UserInfo[13];
 
     private final PlayerPositionBalancer playerPositionBalancer = new PlayerPositionBalancer();
     private final TeamAdaptabilityBalancer teamAdaptabilityBalancer = new TeamAdaptabilityBalancer();
     private final TeamRoleSRBalancer teamRoleSRBalancer = new TeamRoleSRBalancer();
     private final TeamSRBalancer teamSRBalancer = new TeamSRBalancer();
+
+    public TieredBalancer() {
+        for (int i = 0; i < 5; i++) {
+            teamBalanceResultList.add(new TeamBalanceResult(-1, new int[12]));
+        }
+    }
 
     public TieredBalancerResponse balancePlayers(@Nonnull final DbModule dbModule, @Nonnull final List<Integer> players) {
         final List<UserInfo> userInfoList = dbModule.getUserResponses(players.stream().mapToInt(i->i).toArray());
@@ -55,16 +61,22 @@ public class TieredBalancer {
         permute(balanceArray, 0);
         long end = System.currentTimeMillis();
 
-        final List<BalancedPlayer> balancedPlayerList = new ArrayList<>();
-        for (int i = 0; i < 12; i++) {
-            final UserInfo userInfo = userInfoArray[teamBalanceResult.getTeam()[i]];
-            if (userInfo != null && userInfo.id != 0) {
-                final int pos = getBalancedPlayerPosition(i);
-                balancedPlayerList.add(new BalancedPlayer(i < 6 ? 1 : 2, pos, userInfo));
+        final List<List<BalancedPlayer>> balancedPlayerLists = new ArrayList<>();
+        for (final TeamBalanceResult balanceResult : teamBalanceResultList) {
+            balanceResult.getBalanceInspector().balanceTime = ((float) (end - start)) / 1000.0f;
+            final List<BalancedPlayer> balancedPlayerList = new ArrayList<>();
+
+            for (int i = 0; i < 12; i++) {
+                final UserInfo userInfo = userInfoArray[balanceResult.getTeam()[i]];
+                if (userInfo != null && userInfo.id != 0) {
+                    final int pos = getBalancedPlayerPosition(i);
+                    balancedPlayerList.add(new BalancedPlayer(i < 6 ? 1 : 2, pos, userInfo));
+                }
             }
+
+            balancedPlayerLists.add(balancedPlayerList);
         }
-        teamBalanceResult.getBalanceInspector().balanceTime = ((float) (end - start)) / 1000.0f;
-        return new TieredBalancerResponse(balancedPlayerList, teamBalanceResult.getBalanceInspector());
+        return new TieredBalancerResponse(balancedPlayerLists, teamBalanceResultList);
     }
 
     private int getBalancedPlayerPosition(final int i) {
@@ -89,15 +101,18 @@ public class TieredBalancer {
             final float roleScore = teamRoleSRBalancer.calcTeamRoleDifference(4.0f, arr, userInfoArray);
             final float positionScore = playerPositionBalancer.calcPlayerPrimaryScore(8.0f, arr, userInfoArray);
             final float total = teamSr + adpScore + roleScore + positionScore;
-            if (total > teamBalanceResult.getScore()) {
-                teamBalanceResult.setScore(total);
-                teamBalanceResult.setTeam(arr);
-                teamBalanceResult.getBalanceInspector()
-                        .setFromInspector(total)
-                        .setFromInspector(teamSRBalancer)
-                        .setFromInspector(teamAdaptabilityBalancer)
-                        .setFromInspector(teamRoleSRBalancer)
-                        .setFromInspector(playerPositionBalancer);
+            for (TeamBalanceResult result : teamBalanceResultList) {
+                if (total > result.getScore()) {
+                    result.setScore(total);
+                    result.setTeam(arr);
+                    result.getBalanceInspector()
+                            .setFromInspector(total)
+                            .setFromInspector(teamSRBalancer)
+                            .setFromInspector(teamAdaptabilityBalancer)
+                            .setFromInspector(teamRoleSRBalancer)
+                            .setFromInspector(playerPositionBalancer);
+                    break;
+                }
             }
         }
     }
@@ -110,13 +125,16 @@ public class TieredBalancer {
 
     public static class TieredBalancerResponse {
 
-        public final List<BalancedPlayer> userInfoList;
-        public final BalanceInspector balanceInspector;
+        public final List<List<BalancedPlayer>> userInfoLists;
+        public final List<BalanceInspector> balanceInspectorList;
 
-        public TieredBalancerResponse(List<BalancedPlayer> userInfoList, BalanceInspector balanceInspector) {
-            this.userInfoList = userInfoList;
-            this.balanceInspector = balanceInspector;
-            this.balanceInspector.finalCalc(userInfoList);
+        public TieredBalancerResponse(List<List<BalancedPlayer>> userInfoLists, List<TeamBalanceResult> teamBalanceResultList) {
+            this.userInfoLists = userInfoLists;
+            this.balanceInspectorList = new ArrayList<>();
+            for (int i = 0; i < teamBalanceResultList.size(); i++) {
+                teamBalanceResultList.get(i).getBalanceInspector().finalCalc(userInfoLists.get(i));
+                this.balanceInspectorList.add(teamBalanceResultList.get(i).getBalanceInspector());
+            }
         }
     }
 }
