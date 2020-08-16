@@ -29,6 +29,14 @@ import javax.annotation.Nonnull;
 
 public class TeamSRBalancer {
 
+    private final float LOW_THRESHOLD = 120.0f;
+
+    private final float HIGH_THRESHOLD = 150.0f;
+
+    private final float LOW_INFLATION = 10.0f;
+
+    private final float HIGH_INFLATION = 20.0f;
+
     public int team1Sr;
 
     public int team2Sr;
@@ -37,8 +45,20 @@ public class TeamSRBalancer {
                                              @Nonnull final int[] idArray,
                                              @Nonnull final UserInfo[] userInfoList) {
         team1Sr = getTeamSr(0, idArray, userInfoList);
+        final int iTeam1Sr = (int) (team1Sr + (team1Sr * inflateTeamSr(team1Sr / teamSize(0, idArray, userInfoList), 0, idArray, userInfoList) / 100));
         team2Sr = getTeamSr(6, idArray, userInfoList);
-        return (((float) Math.min(team1Sr, team2Sr)) * div) / ((float) Math.max(team2Sr, team1Sr));
+        final int iTeam2Sr = (int) (team2Sr + (team2Sr * inflateTeamSr(team2Sr / teamSize(6, idArray, userInfoList), 6, idArray, userInfoList) / 100));
+        return (((float) Math.min(iTeam1Sr, iTeam2Sr)) * div) / ((float) Math.max(iTeam2Sr, iTeam1Sr));
+    }
+
+    private int teamSize(final int offset, @Nonnull final int[] idArray, @Nonnull final UserInfo[] userInfoList) {
+        int ts = 0;
+        for (int i = 0; i < 6; i++) {
+            if(userInfoList[idArray[offset]].id != 0) {
+                ts++;
+            }
+        }
+        return ts;
     }
 
     private int getTeamSr(final int offset, @Nonnull final int[] idArray, @Nonnull final UserInfo[] userInfoList) {
@@ -48,5 +68,19 @@ public class TeamSRBalancer {
                 userInfoList[idArray[offset + 3]].dpsSr +
                 userInfoList[idArray[offset + 4]].supportSr +
                 userInfoList[idArray[offset + 5]].supportSr;
+    }
+
+    private float inflateTeamSr(final int teamSr, final int offset, @Nonnull final int[] idArray, @Nonnull final UserInfo[] userInfoList) {
+        return getInflation(teamSr, userInfoList[idArray[offset]].tankSr) +
+                getInflation(teamSr, userInfoList[idArray[offset + 1]].tankSr) +
+                getInflation(teamSr, userInfoList[idArray[offset + 2]].dpsSr) +
+                getInflation(teamSr, userInfoList[idArray[offset + 3]].dpsSr) +
+                getInflation(teamSr, userInfoList[idArray[offset + 4]].supportSr) +
+                getInflation(teamSr, userInfoList[idArray[offset + 5]].supportSr);
+    }
+
+    private float getInflation(final int teamSr, final int sr) {
+        final float percent =  (sr * 100.0f) / (float) teamSr;
+        return percent > HIGH_THRESHOLD ? HIGH_INFLATION : percent > LOW_THRESHOLD ? LOW_INFLATION : 0.0f;
     }
 }

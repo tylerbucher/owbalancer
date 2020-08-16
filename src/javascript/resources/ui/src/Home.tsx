@@ -67,9 +67,9 @@ class Home extends React.Component<LoginProps, LoginState> {
         );
     }
 
-    buildMultiDataRow(position: String, name: String, sr: String, te: number, de: number, se: number) {
+    buildMultiDataRow(position: String, name: String, sr: String, te: number, de: number, se: number, warn: number) {
         return (
-            <tr>
+            <tr className={(warn > 150 ? "bg-darkRed" : warn > 120 ? "bg-orange" : "")}>
                 <td>{position}</td>
                 <td>{name}</td>
                 <td>{sr}</td>
@@ -182,11 +182,14 @@ class Home extends React.Component<LoginProps, LoginState> {
         let ref = this;
         let selected = new Set<number>();
         let selectedData = new Array<string>();
+        let selectedDataNameMap = new Map<number, string>();
         // @ts-ignore
         for (let option of document.getElementsByTagName("select")[0].options) {
             if (option.selected) {
                 selectedData.push(option.value);
-                selected.add(Number.parseInt(option.value.split("#")[1]));
+                let id = Number.parseInt(option.value.split("#")[1]);
+                selected.add(id);
+                selectedDataNameMap.set(id, option.text);
             }
         }
         try {
@@ -196,9 +199,10 @@ class Home extends React.Component<LoginProps, LoginState> {
                 responseType: "json",
             });
             if (response.status === 200) {
+                console.log(selectedData)
                 let dataList = new Array<BalanceTablePage>();
                 dataList.push(new BalanceTablePage(this.initTable(), new Array<JSX.Element>(), this.initTable(), new Array<JSX.Element>()));
-                response.data["api"]["userList"].forEach(function (valList: Array<any>, index: number) {
+                response.data["api"]["userList"].forEach(function (valList: Array<any>, index1: number) {
                     let team1List = new Array<JSX.Element>();
                     let team2List = new Array<JSX.Element>();
                     valList.forEach(function (value: Object, index: number) {
@@ -211,12 +215,16 @@ class Home extends React.Component<LoginProps, LoginState> {
                         // @ts-ignore
                         let spf = value["user"]["supportPreference"];
                         // @ts-ignore
+                        let sr = ref.getPositionSr(position, value["user"]);
+                        // @ts-ignore
                         if (Number.parseInt(value["team"]) === 1) {
+                            let avg = (sr * 100.0) / response.data["api"]["balancerMeta"][index1]["team1AverageSr"];
                             // @ts-ignore
-                            team1List.push(ref.buildMultiDataRow(ref.getPositionForId(position), value["user"]["name"], ref.getPositionSr(position, value["user"]), tpf, dpf, spf));
+                            team1List.push(ref.buildMultiDataRow(ref.getPositionForId(position), selectedDataNameMap.get(value["user"]["id"]), sr, tpf, dpf, spf, avg));
                         } else {
+                            let avg = (sr * 100.0) / response.data["api"]["balancerMeta"][index1]["team2AverageSr"];
                             // @ts-ignore
-                            team2List.push(ref.buildMultiDataRow(ref.getPositionForId(position), value["user"]["name"], ref.getPositionSr(position, value["user"]), tpf, dpf, spf));
+                            team2List.push(ref.buildMultiDataRow(ref.getPositionForId(position), selectedDataNameMap.get(value["user"]["id"]), sr, tpf, dpf, spf, avg));
                         }
                     });
                     while (team1List.length < 6) {

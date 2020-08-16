@@ -58,7 +58,7 @@ public class TieredBalancer {
         }
 
         long start = System.currentTimeMillis();
-        permute(balanceArray, 0);
+        permute(balanceArray);
         long end = System.currentTimeMillis();
 
         final List<List<BalancedPlayer>> balancedPlayerLists = new ArrayList<>();
@@ -89,32 +89,85 @@ public class TieredBalancer {
         }
     }
 
-    private void permute(@Nonnull final int[] arr, final int k) {
-        for (int i = k; i < arr.length; i++) {
-            swap(arr, i, k);
-            permute(arr, k + 1);
-            swap(arr, k, i);
-        }
-        if (k == arr.length - 1) {
-            final float teamSr = teamSRBalancer.calcTeamSrDifference(1.0f, arr, userInfoArray);
-            final float adpScore = teamAdaptabilityBalancer.calcTeamAdaptabilityScore(2.0f, arr, userInfoArray);
-            final float roleScore = teamRoleSRBalancer.calcTeamRoleDifference(4.0f, arr, userInfoArray);
-            final float positionScore = playerPositionBalancer.calcPlayerPrimaryScore(8.0f, arr, userInfoArray);
-            final float total = teamSr + adpScore + roleScore + positionScore;
-            for (TeamBalanceResult result : teamBalanceResultList) {
-                if (total > result.getScore()) {
-                    result.setScore(total);
-                    result.setTeam(arr);
-                    result.getBalanceInspector()
-                            .setFromInspector(total)
-                            .setFromInspector(teamSRBalancer)
-                            .setFromInspector(teamAdaptabilityBalancer)
-                            .setFromInspector(teamRoleSRBalancer)
-                            .setFromInspector(playerPositionBalancer);
-                    break;
+    private void permute(@Nonnull final int[] arr) {
+        for (int i = 0; i < 11; i++) {
+            swap(arr, 1, 1 + i);
+            for (int j = 0; j < 9; j++) {
+                swap(arr, 3, 3 + j);
+                for (int k = 0; k < 7; k++) {
+                    swap(arr, 5, 5 + k);
+                    for (int m = 0; m < 5; m++) {
+                        swap(arr, 7, 7 + m);
+                        for (int n = 0; n < 3; n++) {
+                            swap(arr, 10, 10 - n);
+                            for (int o = 0; o < 12; o += 2) {
+                                swap(arr, 0, 0 + o);
+                                swap(arr, 1, 1 + o);
+                                for (int p = 0; p < 10; p += 2) {
+                                    swap(arr, 2, 2 + p);
+                                    swap(arr, 3, 3 + p);
+                                    for (int q = 0; q < 8; q += 2) {
+                                        swap(arr, 4, 4 + q);
+                                        swap(arr, 5, 5 + q);
+                                        for (int r = 0; r < 6; r += 2) {
+                                            swap(arr, 6, 6 + r);
+                                            swap(arr, 7, 7 + r);
+                                            for (int s = 0; s < 4; s += 2) {
+                                                swap(arr, 8, 8 + s);
+                                                swap(arr, 9, 9 + s);
+
+                                                final float teamSr = teamSRBalancer.calcTeamSrDifference(1.0f, arr, userInfoArray);
+                                                final float adpScore = teamAdaptabilityBalancer.calcTeamAdaptabilityScore(2.0f, arr, userInfoArray);
+                                                final float roleScore = teamRoleSRBalancer.calcTeamRoleDifference(4.0f, arr, userInfoArray);
+                                                final float positionScore = playerPositionBalancer.calcPlayerPrimaryScore(8.0f, arr, userInfoArray);
+                                                final float total = teamSr + adpScore + roleScore + positionScore;
+                                                for (TeamBalanceResult result : teamBalanceResultList) {
+                                                    if (total > result.getScore()) {
+                                                        result.setScore(total);
+                                                        result.setTeam(arr);
+                                                        result.getBalanceInspector()
+                                                                .setFromInspector(total)
+                                                                .setFromInspector(teamSRBalancer)
+                                                                .setFromInspector(teamAdaptabilityBalancer)
+                                                                .setFromInspector(teamRoleSRBalancer)
+                                                                .setFromInspector(playerPositionBalancer);
+                                                        break;
+                                                    }
+                                                }
+
+                                                swap(arr, 8, 8 + s);
+                                                swap(arr, 9, 9 + s);
+                                            }
+                                            swap(arr, 6, 6 + r);
+                                            swap(arr, 7, 7 + r);
+                                        }
+                                        swap(arr, 4, 4 + q);
+                                        swap(arr, 5, 5 + q);
+                                    }
+                                    swap(arr, 2, 2 + p);
+                                    swap(arr, 3, 3 + p);
+                                }
+                                swap(arr, 0, 0 + o);
+                                swap(arr, 1, 1 + o);
+                            }
+                            swap(arr, 10, 10 - n);
+                        }
+                        swap(arr, 7, 7 + m);
+                    }
+                    swap(arr, 5, 5 + k);
                 }
+                swap(arr, 3, 3 + j);
             }
+            swap(arr, 1, 1 + i);
         }
+    }
+
+    private byte[] barr(int[] iput) {
+        final byte[] bar = new byte[iput.length];
+        for (int i = 0; i < iput.length; i++) {
+            bar[i] = (byte) iput[i];
+        }
+        return bar;
     }
 
     private void swap(int[] input, int a, int b) {
