@@ -110,6 +110,13 @@ public class UsersPostRequest {
         return userCreated;
     }
 
+    /**
+     * Updates both the users information and their overwatch names.
+     *
+     * @param id       the id of the user.
+     * @param dbModule the module instance to use.
+     * @return ture if the user was updated false otherwise.
+     */
     public boolean updateUser(final int id, @Nonnull final DbModule dbModule) {
         boolean userUpdated = dbModule.updateUser(
                 id,
@@ -122,7 +129,7 @@ public class UsersPostRequest {
                 this.supportPreference
         );
         if (userUpdated) {
-            if(userUpdated = dbModule.deleteOwNamesForId(id)) {
+            if (userUpdated = dbModule.deleteOwNamesForId(id)) {
                 userUpdated = dbModule.addOverwatchName(id, this.overwatchNames);
             }
         }

@@ -1,6 +1,6 @@
 {
-    "short_name": "localauth-ui",
-    "name": "localauth-ui",
+    "short_name": "owbalancer-ui",
+    "name": "owbalancer-ui",
     "icons": [
         {
             "src": "favicon.ico",

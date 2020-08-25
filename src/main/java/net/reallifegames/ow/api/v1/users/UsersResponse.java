@@ -58,10 +58,15 @@ class UsersResponse extends ApiResponse {
         }
     }
 
+    /**
+     * @param id           the users id.
+     * @param usernameList a map of user ids.
+     * @return a list of names for a users id.
+     */
     private List<String> getNames(final int id, @Nonnull final List<Map.Entry<Integer, String>> usernameList) {
         final List<String> names = new ArrayList<>();
         for (final Map.Entry<Integer, String> entry : usernameList) {
-            if(id == entry.getKey()) {
+            if (id == entry.getKey()) {
                 names.add(entry.getValue());
             }
         }

@@ -42,8 +42,8 @@ public class TeamSRBalancer {
     public int team2Sr;
 
     public float calcTeamSrDifference(final float div,
-                                             @Nonnull final int[] idArray,
-                                             @Nonnull final UserInfo[] userInfoList) {
+                                      @Nonnull final int[] idArray,
+                                      @Nonnull final UserInfo[] userInfoList) {
         team1Sr = getTeamSr(0, idArray, userInfoList);
         final int iTeam1Sr = (int) (team1Sr + (team1Sr * inflateTeamSr(team1Sr / teamSize(0, idArray, userInfoList), 0, idArray, userInfoList) / 100));
         team2Sr = getTeamSr(6, idArray, userInfoList);
@@ -54,7 +54,7 @@ public class TeamSRBalancer {
     private int teamSize(final int offset, @Nonnull final int[] idArray, @Nonnull final UserInfo[] userInfoList) {
         int ts = 0;
         for (int i = 0; i < 6; i++) {
-            if(userInfoList[idArray[offset]].id != 0) {
+            if (userInfoList[idArray[offset]].id != 0) {
                 ts++;
             }
         }
@@ -80,7 +80,7 @@ public class TeamSRBalancer {
     }
 
     private float getInflation(final int teamSr, final int sr) {
-        final float percent =  (sr * 100.0f) / (float) teamSr;
+        final float percent = (sr * 100.0f) / (float) teamSr;
         return percent > HIGH_THRESHOLD ? HIGH_INFLATION : percent > LOW_THRESHOLD ? LOW_INFLATION : 0.0f;
     }
 }

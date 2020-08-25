@@ -31,10 +31,13 @@ import javax.annotation.Nonnull;
 public class DeleteUserRequest {
 
     /**
-     * Requested username for new user.
+     * User id to delete.
      */
     private final int id;
 
+    /**
+     * @param id the id to delete.
+     */
     public DeleteUserRequest(@JsonProperty ("id") final int id) {
         this.id = id;
     }

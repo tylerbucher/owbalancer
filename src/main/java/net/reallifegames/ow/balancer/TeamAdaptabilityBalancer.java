@@ -33,8 +33,8 @@ public class TeamAdaptabilityBalancer {
     public int team2Adaptability;
 
     public float calcTeamAdaptabilityScore(final float div,
-                                                   @Nonnull final int[] idArray,
-                                                   @Nonnull final UserInfo[] userInfoList) {
+                                           @Nonnull final int[] idArray,
+                                           @Nonnull final UserInfo[] userInfoList) {
         team1Adaptability = calcTeamAdaptability(0, idArray, userInfoList);
         team2Adaptability = calcTeamAdaptability(6, idArray, userInfoList);
         return (((float) Math.min(team2Adaptability, team1Adaptability)) * div) / ((float) Math.max(team2Adaptability, team1Adaptability));

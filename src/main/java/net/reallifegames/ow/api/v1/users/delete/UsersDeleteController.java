@@ -33,6 +33,7 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 
 public class UsersDeleteController {
+
     /**
      * Default create user success response.
      */
@@ -63,7 +64,7 @@ public class UsersDeleteController {
                                   @Nonnull final DbModule dbModule) throws IOException {
         // Set the response type
         final Integer param = context.pathParam(":id", Integer.class).getOrNull();
-        if(param == null || param == -1) {
+        if (param == null || param == -1) {
             ApiController.LOGGER.debug("Delete user  path param error");
             context.status(400);
             context.result("Bad Request");

@@ -66,7 +66,6 @@ public class BalanceController {
             context.result("Bad Request");
             return;
         }
-
         final BalanceResponse balanceResponse = balanceRequest.getBalanceResponse(ApiController.apiResponse, dbModule);
         // Write json result
         ApiController.jsonContextResponse(balanceResponse, context);

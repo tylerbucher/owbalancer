@@ -68,7 +68,7 @@ public final class MySqlModule extends SqlModule {
     private HikariConfig hikariConfig;
 
     /**
-     * Sql pool.
+     * Sql connection pool.
      */
     private HikariDataSource dataSource;
 
@@ -76,6 +76,9 @@ public final class MySqlModule extends SqlModule {
         loadConnectionPool();
     }
 
+    /**
+     * Loads the sql connection pool from the configuration info.
+     */
     private void loadConnectionPool() {
         hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl(Balancer.getJdbcUrl());

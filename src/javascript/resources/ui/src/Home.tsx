@@ -382,8 +382,9 @@ class Home extends React.Component<LoginProps, LoginState> {
                 </div>
             </div>
             <ul className="pagination">
-                <li className={"page-item service prev-page "+ (this.state.selectedPage === 1 ? "disabled" : "")}><a className="page-link"
-                                                                        onClick={() => this.changeTablePage(this.state.selectedPage - 1)}>Prev</a>
+                <li className={"page-item service prev-page " + (this.state.selectedPage === 1 ? "disabled" : "")}><a
+                    className="page-link"
+                    onClick={() => this.changeTablePage(this.state.selectedPage - 1)}>Prev</a>
                 </li>
                 <li className={"page-item " + (this.state.selectedPage === 1 ? "active" : "")}><a className="page-link"
                                                                                                   onClick={() => this.changeTablePage(1)}>1</a>
@@ -400,8 +401,9 @@ class Home extends React.Component<LoginProps, LoginState> {
                 <li className={"page-item " + (this.state.selectedPage === 5 ? "active" : "")}><a className="page-link"
                                                                                                   onClick={() => this.changeTablePage(5)}>5</a>
                 </li>
-                <li className={"page-item service next-page "+ (this.state.selectedPage === 5 ? "disabled" : "")}><a className="page-link"
-                                                               onClick={() => this.changeTablePage(this.state.selectedPage + 1)}>Next</a>
+                <li className={"page-item service next-page " + (this.state.selectedPage === 5 ? "disabled" : "")}><a
+                    className="page-link"
+                    onClick={() => this.changeTablePage(this.state.selectedPage + 1)}>Next</a>
                 </li>
             </ul>
             <Dropdown autoClose={false}>

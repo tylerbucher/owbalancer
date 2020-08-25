@@ -33,8 +33,8 @@ public class PlayerPositionBalancer {
     public int team2PositionPreferenceCount;
 
     public float calcPlayerPrimaryScore(final float div,
-                                                @Nonnull final int[] idArray,
-                                                @Nonnull final UserInfo[] userInfoList) {
+                                        @Nonnull final int[] idArray,
+                                        @Nonnull final UserInfo[] userInfoList) {
         team1PositionPreferenceCount = calcTeamPrimaryPosition(0, idArray, userInfoList);
         team2PositionPreferenceCount = calcTeamPrimaryPosition(6, idArray, userInfoList);
         return (((float) team1PositionPreferenceCount + team2PositionPreferenceCount) * div) / 24.0f;

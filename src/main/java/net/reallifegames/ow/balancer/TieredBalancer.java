@@ -100,56 +100,68 @@ public class TieredBalancer {
                         swap(arr, 7, 7 + m);
                         for (int n = 0; n < 3; n++) {
                             swap(arr, 10, 10 - n);
-                            for (int o = 0; o < 12; o += 2) {
-                                swap(arr, 0, 0 + o);
-                                swap(arr, 1, 1 + o);
-                                for (int p = 0; p < 10; p += 2) {
-                                    swap(arr, 2, 2 + p);
-                                    swap(arr, 3, 3 + p);
-                                    for (int q = 0; q < 8; q += 2) {
-                                        swap(arr, 4, 4 + q);
-                                        swap(arr, 5, 5 + q);
-                                        for (int r = 0; r < 6; r += 2) {
-                                            swap(arr, 6, 6 + r);
-                                            swap(arr, 7, 7 + r);
-                                            for (int s = 0; s < 4; s += 2) {
-                                                swap(arr, 8, 8 + s);
-                                                swap(arr, 9, 9 + s);
 
-                                                final float teamSr = teamSRBalancer.calcTeamSrDifference(1.0f, arr, userInfoArray);
-                                                final float adpScore = teamAdaptabilityBalancer.calcTeamAdaptabilityScore(2.0f, arr, userInfoArray);
-                                                final float roleScore = teamRoleSRBalancer.calcTeamRoleDifference(4.0f, arr, userInfoArray);
-                                                final float positionScore = playerPositionBalancer.calcPlayerPrimaryScore(8.0f, arr, userInfoArray);
-                                                final float total = teamSr + adpScore + roleScore + positionScore;
-                                                for (TeamBalanceResult result : teamBalanceResultList) {
-                                                    if (total > result.getScore()) {
-                                                        result.setScore(total);
-                                                        result.setTeam(arr);
-                                                        result.getBalanceInspector()
-                                                                .setFromInspector(total)
-                                                                .setFromInspector(teamSRBalancer)
-                                                                .setFromInspector(teamAdaptabilityBalancer)
-                                                                .setFromInspector(teamRoleSRBalancer)
-                                                                .setFromInspector(playerPositionBalancer);
-                                                        break;
+                            for (int o = 0; o < 10; o += 2) {                             // Beginning of nested loops for team combos.
+                                swap(arr, 2, 2 + o);
+                                swap(arr, 3, 3 + o);
+                                for (int p = 0 + o; p < 8; p += 2) {                      // End of nested loops for team combos.
+                                    swap(arr, 4, 4 + p);
+                                    swap(arr, 5, 5 + p);
+                                    //############################################################################
+                                    //############################################################################
+                                    for (int q = 0; q < 6; q += 2) {                        // Beginning of nested loops for team 1 permutations.
+                                        swap(arr, 0, 0 + q);
+                                        swap(arr, 1, 1 + q);
+                                        for (int r = 0; r < 4; r += 2) {                    // End of nested loops for team 1 permutations.
+                                            swap(arr, 2, 2 + r);
+                                            swap(arr, 3, 3 + r);
+                                            //############################################################################
+                                            for (int s = 0; s < 6; s += 2) {               // Beginning of nested loops for team 2 permutations.
+                                                swap(arr, 6, 6 + s);
+                                                swap(arr, 7, 7 + s);
+                                                for (int t = 0; t < 4; t += 2) {           // End of nested loops for team 2 permutations.
+                                                    swap(arr, 8, 8 + t);
+                                                    swap(arr, 9, 9 + t);
+                                                    final float teamSr = teamSRBalancer.calcTeamSrDifference(1.0f, arr, userInfoArray);
+                                                    final float adpScore = teamAdaptabilityBalancer.calcTeamAdaptabilityScore(2.0f, arr, userInfoArray);
+                                                    final float roleScore = teamRoleSRBalancer.calcTeamRoleDifference(4.0f, arr, userInfoArray);
+                                                    final float positionScore = playerPositionBalancer.calcPlayerPrimaryScore(8.0f, arr, userInfoArray);
+                                                    final float total = teamSr + adpScore + roleScore + positionScore;
+                                                    for (TeamBalanceResult result : teamBalanceResultList) {
+                                                        if (total > result.getScore()) {
+                                                            result.setScore(total);
+                                                            result.setTeam(arr);
+                                                            result.getBalanceInspector()
+                                                                    .setFromInspector(total)
+                                                                    .setFromInspector(teamSRBalancer)
+                                                                    .setFromInspector(teamAdaptabilityBalancer)
+                                                                    .setFromInspector(teamRoleSRBalancer)
+                                                                    .setFromInspector(playerPositionBalancer);
+                                                            break;
+                                                        }
                                                     }
+                                                    swap(arr, 8, 8 + t);
+                                                    swap(arr, 9, 9 + t);
                                                 }
-
-                                                swap(arr, 8, 8 + s);
-                                                swap(arr, 9, 9 + s);
+                                                swap(arr, 6, 6 + s);
+                                                swap(arr, 7, 7 + s);
                                             }
-                                            swap(arr, 6, 6 + r);
-                                            swap(arr, 7, 7 + r);
+                                            //############################################################################
+                                            swap(arr, 2, 2 + r);
+                                            swap(arr, 3, 3 + r);
                                         }
-                                        swap(arr, 4, 4 + q);
-                                        swap(arr, 5, 5 + q);
+                                        swap(arr, 0, 0 + q);
+                                        swap(arr, 1, 1 + q);
                                     }
-                                    swap(arr, 2, 2 + p);
-                                    swap(arr, 3, 3 + p);
+                                    //############################################################################
+                                    //############################################################################
+                                    swap(arr, 4, 4 + p);
+                                    swap(arr, 5, 5 + p);
                                 }
-                                swap(arr, 0, 0 + o);
-                                swap(arr, 1, 1 + o);
+                                swap(arr, 2, 2 + o);
+                                swap(arr, 3, 3 + o);
                             }
+
                             swap(arr, 10, 10 - n);
                         }
                         swap(arr, 7, 7 + m);
@@ -160,14 +172,6 @@ public class TieredBalancer {
             }
             swap(arr, 1, 1 + i);
         }
-    }
-
-    private byte[] barr(int[] iput) {
-        final byte[] bar = new byte[iput.length];
-        for (int i = 0; i < iput.length; i++) {
-            bar[i] = (byte) iput[i];
-        }
-        return bar;
     }
 
     private void swap(int[] input, int a, int b) {

@@ -77,7 +77,7 @@ public class UsersPostController {
             return;
         }
         final Integer param = context.pathParam(":id", Integer.class).getOrNull();
-        if(param == null || param == -1) {
+        if (param == null || param == -1) {
             final UsersPostResponse userResponse = userPostRequest.userExists(dbModule) ? errorResponse : successResponse;
             if (userResponse.equals(successResponse)) {
                 context.status(userPostRequest.createUser(dbModule) ? 200 : 500);
@@ -88,7 +88,7 @@ public class UsersPostController {
             ApiController.jsonContextResponse(userResponse, context);
         } else {
             final UsersPostResponse userResponse;
-            if(userPostRequest.updateUser(param, dbModule)) {
+            if (userPostRequest.updateUser(param, dbModule)) {
                 userResponse = successResponse;
                 context.status(200);
             } else {

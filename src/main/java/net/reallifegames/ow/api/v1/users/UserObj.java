@@ -26,14 +26,31 @@ package net.reallifegames.ow.api.v1.users;
 import javax.annotation.Nonnull;
 import java.util.List;
 
+/**
+ * Response object for multiple single users.
+ */
 public class UserObj {
 
+    /**
+     * The users id.
+     */
     public final int id;
 
+    /**
+     * A users discord name.
+     */
     public final String discordName;
 
+    /**
+     * A users overwatch names.
+     */
     public final List<String> owNames;
 
+    /**
+     * @param id          the users id.
+     * @param discordName a users discord name.
+     * @param owNames     a users overwatch names.
+     */
     public UserObj(final int id, @Nonnull final String discordName, @Nonnull final List<String> owNames) {
         this.id = id;
         this.discordName = discordName;

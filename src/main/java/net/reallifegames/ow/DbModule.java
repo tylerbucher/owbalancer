@@ -95,20 +95,55 @@ public interface DbModule {
                        final int supportSr,
                        final int supportPreference);
 
+    /**
+     * @param username the name of a user.
+     * @return the id of a user based on the username.
+     */
     int getUserId(@Nonnull final String username);
 
+    /**
+     * Adds overwatch usernames to a users profile.
+     *
+     * @param id             the id of the users profile.
+     * @param overwatchNames the list of names to add to a user.
+     * @return true if the operation was successful false otherwise.
+     */
     boolean addOverwatchName(final int id, @Nonnull final String[] overwatchNames);
 
+    /**
+     * @param id the users id to get info for.
+     * @return a users information object.
+     */
     @Nullable
     UserInfo getUserInfo(final int id);
 
     /**
-     * @return the list of users in the db.
+     * @param id the id of the user.
+     * @return the list of usernames in the db.
      */
     List<String> getNameListForId(final int id);
 
+    /**
+     * Deletes the list of overwatch usernames for a user.
+     *
+     * @param id the id of the user.
+     * @return true if the operation was successful false otherwise.
+     */
     boolean deleteOwNamesForId(final int id);
 
+    /**
+     * Updates a users information.
+     *
+     * @param id                the id of the user.
+     * @param username          the new users name.
+     * @param tankSr            the new sr for the user.
+     * @param tankPreference    0 for not wanting to play, 1 for can play, 2 for wants to play.
+     * @param dpsSr             the new sr for the user.
+     * @param dpsPreference     0 for not wanting to play, 1 for can play, 2 for wants to play.
+     * @param supportSr         the new sr for the user.
+     * @param supportPreference 0 for not wanting to play, 1 for can play, 2 for wants to play.
+     * @return true if the operation was successful false otherwise.
+     */
     boolean updateUser(final int id,
                        @Nonnull final String username,
                        final int tankSr,

@@ -42,52 +42,18 @@ import java.util.*;
  */
 public abstract class SqlModule implements DbModule {
 
-    /**
-     * The static logger for this version of the api.
-     */
     public static final Logger LOGGER = LoggerFactory.getLogger(SqlModule.class);
 
-    /**
-     * Sql query for getting all users.
-     */
     private static final String QUERY_USER_LIST = "SELECT * FROM `alt_user_names`;";
-
-    /**
-     * Sql query for getting all users.
-     */
     private static final String QUERY_USER_NAMES_FOR_ID = "SELECT `name` FROM `alt_user_names` WHERE `id` = ?;";
-
-    /**
-     * Sql query for getting all users.
-     */
     private static final String DELETE_USER_NAMES_FOR_ID = "DELETE FROM `alt_user_names` WHERE `id` = ?;";
-
-    /**
-     * Sql query for getting all users.
-     */
     private static final String QUERY_SINGLE_USER = "SELECT * FROM `user_info` WHERE `id`=?;";
-
-    /**
-     * Sql query for checking if a user exists.
-     */
     private static final String QUERY_GET_USER_INFO = "SELECT * FROM `user_info` WHERE `id` IN ";
-
-    /**
-     * Sql query for checking if a user exists.
-     */
     private static final String QUERY_USER_EXISTS = "SELECT `id` FROM `user_info` WHERE lower(`name`)=lower(?);";
-
-    /**
-     * Sql query for checking if a user exists.
-     */
     private static final String QUERY_USER_NAMES = "SELECT `id`, `name` FROM `user_info`;";
-
     private static final String INSERT_NEW_USER = "INSERT INTO `user_info`(`name`, `tank_pref`, `dps_pref`, `support_pref`, `tank_sr`, `dps_sr`, `support_sr`) VALUES (?,?,?,?,?,?,?);";
-
     private static final String INSERT_NEW_OW_NAME = "INSERT INTO `alt_user_names`(`id`, `name`) VALUES (?, ?);";
-
     private static final String UPDATE_USER_INFO = "UPDATE `user_info` SET `name`=?,`tank_pref`=?,`dps_pref`=?,`support_pref`=?,`tank_sr`=?,`dps_sr`=?,`support_sr`=? WHERE `id`=?;";
-
     private static final String DELETE_USER_INFO = "DELETE FROM `user_info` WHERE `id`=?;";
 
     @Override
@@ -130,6 +96,10 @@ public abstract class SqlModule implements DbModule {
         return userInfoList;
     }
 
+    /**
+     * @param userIds the list of ids to make a query for.
+     * @return a constructed query from user ids.
+     */
     private String getUserInfoSqlQuery(final int[] userIds) {
         final StringBuilder builder = new StringBuilder(QUERY_GET_USER_INFO);
         builder.append("(");
@@ -162,9 +132,6 @@ public abstract class SqlModule implements DbModule {
         return userList;
     }
 
-    /**
-     * @return the list of users in the db.
-     */
     @Override
     public Map<Integer, String> getUserNameList() {
         final Map<Integer, String> userMap = new HashMap<>();
@@ -182,12 +149,6 @@ public abstract class SqlModule implements DbModule {
         return userMap;
     }
 
-    /**
-     * Checks to see if a user already exists.
-     *
-     * @param username the username to check.
-     * @return true if the user exists false otherwise.
-     */
     @Override
     public boolean userExists(@Nonnull final String username) {
         boolean returnResult = true;
@@ -205,18 +166,6 @@ public abstract class SqlModule implements DbModule {
         return returnResult;
     }
 
-    /**
-     * Attempts to create a new user.
-     *
-     * @param username          name of the new user.
-     * @param tankSr
-     * @param tankPreference
-     * @param dpsSr
-     * @param dpsPreference
-     * @param supportSr
-     * @param supportPreference
-     * @return true if the user was created false otherwise.
-     */
     @Override
     public boolean createUser(@Nonnull final String username,
                               final int tankSr,
@@ -313,10 +262,6 @@ public abstract class SqlModule implements DbModule {
         return userInfo;
     }
 
-    /**
-     * @param id
-     * @return the list of users in the db.
-     */
     @Override
     public List<String> getNameListForId(final int id) {
         final List<String> nameList = new ArrayList<>();
@@ -379,12 +324,6 @@ public abstract class SqlModule implements DbModule {
         return true;
     }
 
-    /**
-     * Checks to see if a user already exists.
-     *
-     * @param id the id to check.
-     * @return true if the user exists false otherwise.
-     */
     @Override
     public boolean deletePlayer(final int id) {
         try (final Connection connection = getConnection()) {

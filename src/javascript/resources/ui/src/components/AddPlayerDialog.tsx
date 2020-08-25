@@ -4,7 +4,7 @@ import axios from "axios";
 import {Notific8} from 'notific8';
 import "../../node_modules/notific8/src/sass/notific8.scss";
 // @ts-ignore
-import {Checkbox, Dialog, TagInput, Button} from "metro4-react";
+import {Button, Checkbox, Dialog, TagInput} from "metro4-react";
 
 type AddPlayerDialogProps = {
     // using `interface` is also ok
@@ -151,11 +151,13 @@ class AddPlayerDialog extends React.Component<AddPlayerDialogProps, AddPlayerDia
 
     render() {
         return (<Dialog cls="success" open={true} modal={true} overlayAlpha={0.5} overlayColor={"#000000"}
-                        onClose={this.props.onClose()} title="Add New Player" clsActions={"form-group d-flex flex-justify-end"}>
+                        onClose={this.props.onClose()} title="Add New Player"
+                        clsActions={"form-group d-flex flex-justify-end"}>
             <form id={"addUserForm"} onSubmit={(e) => this.handleSubmit(e)}>
                 <div className="form-group">
                     <label>Discord Username</label>
-                    <input type="text" placeholder="Enter discord username" onChange={this.handleUsernameChange} value={this.state.username}/>
+                    <input type="text" placeholder="Enter discord username" onChange={this.handleUsernameChange}
+                           value={this.state.username}/>
                 </div>
                 <div className="form-group">
                     <label>Overwatch Usernames</label>
@@ -165,30 +167,40 @@ class AddPlayerDialog extends React.Component<AddPlayerDialogProps, AddPlayerDia
                 </div>
                 <div className="form-group">
                     <label>Tank SR</label>
-                    <input type="number" placeholder="2500" onChange={this.handleTankSrChange} value={this.state.tankSr}/>
+                    <input type="number" placeholder="2500" onChange={this.handleTankSrChange}
+                           value={this.state.tankSr}/>
                 </div>
                 <div className="form-group">
-                    <Checkbox caption={"Primary Tank"} onChange={() => this.tankCheckBox(2)} checked={this.state.tankPref === 2}/>
-                    <Checkbox caption={"Secondary Tank"} onChange={() => this.tankCheckBox(1)} checked={this.state.tankPref === 1}/>
-                    <Checkbox caption={"No Tank"} onChange={() => this.tankCheckBox(0)} checked={this.state.tankPref === 0}/>
+                    <Checkbox caption={"Primary Tank"} onChange={() => this.tankCheckBox(2)}
+                              checked={this.state.tankPref === 2}/>
+                    <Checkbox caption={"Secondary Tank"} onChange={() => this.tankCheckBox(1)}
+                              checked={this.state.tankPref === 1}/>
+                    <Checkbox caption={"No Tank"} onChange={() => this.tankCheckBox(0)}
+                              checked={this.state.tankPref === 0}/>
                 </div>
                 <div className="form-group">
                     <label>DPS SR</label>
                     <input type="number" placeholder="2500" onChange={this.handleDpsSrChange} value={this.state.dpsSr}/>
                 </div>
                 <div className="form-group">
-                    <Checkbox caption={"Primary DPS"} onChange={() => this.dpsBox(2)} checked={this.state.dpsPref === 2}/>
-                    <Checkbox caption={"Secondary DPS"} onChange={() => this.dpsBox(1)} checked={this.state.dpsPref === 1}/>
+                    <Checkbox caption={"Primary DPS"} onChange={() => this.dpsBox(2)}
+                              checked={this.state.dpsPref === 2}/>
+                    <Checkbox caption={"Secondary DPS"} onChange={() => this.dpsBox(1)}
+                              checked={this.state.dpsPref === 1}/>
                     <Checkbox caption={"No DPS"} onChange={() => this.dpsBox(0)} checked={this.state.dpsPref === 0}/>
                 </div>
                 <div className="form-group">
                     <label>Support SR</label>
-                    <input type="number" placeholder="2500" onChange={this.handleSupportSrChange} value={this.state.supportSr}/>
+                    <input type="number" placeholder="2500" onChange={this.handleSupportSrChange}
+                           value={this.state.supportSr}/>
                 </div>
                 <div className="form-group">
-                    <Checkbox caption={"Primary Support"} onChange={() => this.supportCheckBox(2)} checked={this.state.supportPref === 2}/>
-                    <Checkbox caption={"Secondary Support"} onChange={() => this.supportCheckBox(1)} checked={this.state.supportPref === 1}/>
-                    <Checkbox caption={"No Support"} onChange={() => this.supportCheckBox(0)} checked={this.state.supportPref === 0}/>
+                    <Checkbox caption={"Primary Support"} onChange={() => this.supportCheckBox(2)}
+                              checked={this.state.supportPref === 2}/>
+                    <Checkbox caption={"Secondary Support"} onChange={() => this.supportCheckBox(1)}
+                              checked={this.state.supportPref === 1}/>
+                    <Checkbox caption={"No Support"} onChange={() => this.supportCheckBox(0)}
+                              checked={this.state.supportPref === 0}/>
                 </div>
                 <Button cls={"button success form-control mb-4"} title={"Create User"} type={"submit"}/>
             </form>

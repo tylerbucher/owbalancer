@@ -117,7 +117,7 @@ public class BalanceInspector {
         this.team2AverageSr = team2TotalSr / teamCount[1];
         this.team1TotalSrDistribution = teamTotalSrDistribution[0];
         this.team2TotalSrDistribution = teamTotalSrDistribution[1];
-        this.team1TotalAverageSr = teamTotalSrDistribution[0] / 3 /teamCount[0];
+        this.team1TotalAverageSr = teamTotalSrDistribution[0] / 3 / teamCount[0];
         this.team2TotalAverageSr = teamTotalSrDistribution[1] / 3 / teamCount[1];
         this.team1Adaptability = (this.team1Adaptability * 100) / 36;
         this.team1TankAdaptability = (teamAdaptability[0] * 100) / 12;

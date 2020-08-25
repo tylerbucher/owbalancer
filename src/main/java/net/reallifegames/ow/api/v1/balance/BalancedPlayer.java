@@ -29,18 +29,46 @@ import javax.annotation.Nonnull;
 
 public class BalancedPlayer {
 
+    /**
+     * The integer constant for the tank position.
+     */
     public static final int TANK_POSITION = 0;
 
+    /**
+     * The integer constant for the support position.
+     */
     public static final int SUPPORT_POSITION = 2;
 
+    /**
+     * The integer constant for the DPS position.
+     */
     public static final int DPS_POSITION = 1;
 
+    /**
+     * The team the user is on. 0 or 1.
+     */
     public final int team;
 
+    /**
+     * The players position.
+     * <p>
+     * Options. {@link BalancedPlayer#TANK_POSITION} {@link BalancedPlayer#SUPPORT_POSITION} {@link
+     * BalancedPlayer#DPS_POSITION}
+     * <p/>
+     */
     public final int position;
 
+    /**
+     * The users information.
+     */
     public final UserInfo user;
 
+    /**
+     * @param team     the team the user is on. 0 or 1.
+     * @param position Options. {@link BalancedPlayer#TANK_POSITION} {@link BalancedPlayer#SUPPORT_POSITION} {@link *
+     *                 BalancedPlayer#DPS_POSITION}
+     * @param user     the users information.
+     */
     public BalancedPlayer(final int team, final int position, @Nonnull final UserInfo user) {
         this.team = team;
         this.position = position;

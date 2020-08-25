@@ -29,12 +29,26 @@ import net.reallifegames.ow.models.UserInfo;
 import javax.annotation.Nonnull;
 import java.util.List;
 
+/**
+ * Json response object for a single user.
+ */
 public class SingleUserResponse extends ApiResponse {
 
+    /**
+     * The info for a user.
+     */
     public final UserInfo userInfo;
 
+    /**
+     * The users overwatch names.
+     */
     public final List<String> owNames;
 
+    /**
+     * @param apiResponse standard api response structure.
+     * @param userInfo    the info for a user.
+     * @param owNames     the users overwatch names.
+     */
     public SingleUserResponse(@Nonnull final ApiResponse apiResponse, @Nonnull final UserInfo userInfo, @Nonnull final List<String> owNames) {
         super(apiResponse.version);
         this.userInfo = userInfo;

@@ -41,6 +41,9 @@ public class BalanceResponse extends ApiResponse {
      */
     public final List<List<BalancedPlayer>> userList;
 
+    /**
+     * The list of metadata for a balance result.
+     */
     public final List<BalanceInspector> balancerMeta;
 
     /**
@@ -48,6 +51,7 @@ public class BalanceResponse extends ApiResponse {
      *
      * @param apiResponse the root api response.
      * @param userList    list of users in this application.
+     * @param balanceMeta list of metadata for a balance result.
      */
     public BalanceResponse(@Nonnull final ApiResponse apiResponse, @Nonnull final List<List<BalancedPlayer>> userList, @Nonnull final List<BalanceInspector> balanceMeta) {
         super(apiResponse.version);

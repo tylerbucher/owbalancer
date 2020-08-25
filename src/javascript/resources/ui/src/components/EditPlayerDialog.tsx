@@ -298,7 +298,7 @@ class EditPlayerDialog extends React.Component<EditPlayerDialogProps, EditPlayer
                 </div>
                 <div className="form-group">
                     <Button id={"subButton"} cls={"button primary form-control mb-4"} title={"Submit User Changes"}
-                            type={"submit"} />
+                            type={"submit"}/>
                     <Button id={"delButton"} cls={"button alert form-control mb-4"} title={"Delete User"}
                             onClick={(e: any) => {
                                 e.preventDefault();

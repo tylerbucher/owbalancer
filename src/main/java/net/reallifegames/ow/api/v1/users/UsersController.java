@@ -53,19 +53,19 @@ public class UsersController {
     /**
      * Returns all users to the the client.
      *
-     * @param context        the REST request context to modify if the user is not an admin.
-     * @param dbModule       the module instance to use.
+     * @param context  the REST request context to modify if the user is not an admin.
+     * @param dbModule the module instance to use.
      * @throws IOException if the object could not be marshaled.
      */
     public static void getUsers(@Nonnull final Context context, @Nonnull final DbModule dbModule) throws IOException {
         final Integer param = context.pathParam(":id", Integer.class).getOrNull();
-        if(param == null || param == -1) {
+        if (param == null || param == -1) {
             context.status(200);
             // Set response payload
             ApiController.jsonContextResponse(new UsersResponse(ApiController.apiResponse, dbModule.getUserList(), dbModule.getUserNameList()), context);
         } else {
             final UserInfo userInfo = dbModule.getUserInfo(param);
-            if(userInfo == null) {
+            if (userInfo == null) {
                 ApiController.LOGGER.debug("Api login controller request marshall error");
                 context.status(400);
                 context.result("Bad Request");

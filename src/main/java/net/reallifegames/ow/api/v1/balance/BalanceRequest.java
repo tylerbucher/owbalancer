@@ -54,6 +54,9 @@ public class BalanceRequest {
         this.users = users;
     }
 
+    /**
+     * @return true if the there are less than 13 users and more than 1, false otherwise.
+     */
     public boolean validate() {
         return users.size() > 1 && users.size() < 13;
     }

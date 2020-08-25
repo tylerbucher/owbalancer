@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 
 public class Balancer {
+
     /**
      * The static logger for the application.
      */
@@ -61,12 +62,14 @@ public class Balancer {
     private static String JDBC_TYPE = "";
 
     /**
-     * The database jdbc url.
+     * The database url connection string.
      */
     private static String JDBC_URL = "";
 
     /**
      * The website domain.
+     * <p>
+     * Example: example.com
      */
     public static String DOMAIN = "";
 
@@ -90,9 +93,7 @@ public class Balancer {
         } catch (ClassNotFoundException e) {
             LOGGER.error("Error loading sq lite driver.", e);
         }
-        // Create tables
         Balancer.DB_MODULE.createTables();
-        // Set spark port
         final Javalin javalinApp = Javalin.create(config->{
             config.addStaticFiles(System.getProperty("user.dir") + "/public", Location.EXTERNAL);
             config.addSinglePageRoot("/", System.getProperty("user.dir") + "/public/" + "index.html", Location.EXTERNAL);
@@ -107,18 +108,23 @@ public class Balancer {
         });
         // Api v1 pathing group
         javalinApp.routes(()->ApiBuilder.path("/api/v1", ()->{
-            // Root api path controller
             ApiBuilder.get("/", ApiController::getApiInformation);
-            // List of users api controller
             ApiBuilder.get("/users/:id", UsersController::getUsers);
             ApiBuilder.post("/users/:id", UsersPostController::postNewUser);
             ApiBuilder.delete("/users/:id", UsersDeleteController::deleteUser);
             ApiBuilder.post("/balance", BalanceController::postBalance);
         }));
-
         javalinApp.start(8080);
     }
 
+    /**
+     * Attempts to find a valid database module based on its name.
+     *
+     * @param key the name of a module.
+     * @return the requested db modules instance or sqlite module if none is found.
+     *
+     * @throws ClassNotFoundException if the sqlite JDBC class cannot be loaded.
+     */
     private static DbModule findDbModule(@Nonnull final String key) throws ClassNotFoundException {
         switch (key) {
             case "mysql":
@@ -137,7 +143,7 @@ public class Balancer {
     }
 
     /**
-     * @return the database jdbc url.
+     * @return the database url connection string.
      */
     public static String getJdbcUrl() {
         return JDBC_URL;
