@@ -4,7 +4,7 @@ COPY . /
 
 RUN set -ex; \
     chmod +x ./gradlew ; \
-    ./gradlew build ; \
+    ./gradlew build --no-build-cache; \
     mv build/libs/OWBalancer.jar / ;
 
 FROM node:13 AS client
