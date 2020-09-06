@@ -23,6 +23,8 @@
  */
 package net.reallifegames.ow;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;

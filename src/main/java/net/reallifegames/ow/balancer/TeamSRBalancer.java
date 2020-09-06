@@ -45,9 +45,13 @@ public class TeamSRBalancer {
                                       @Nonnull final int[] idArray,
                                       @Nonnull final UserInfo[] userInfoList) {
         team1Sr = getTeamSr(0, idArray, userInfoList);
-        final int iTeam1Sr = (int) (team1Sr + (team1Sr * inflateTeamSr(team1Sr / teamSize(0, idArray, userInfoList), 0, idArray, userInfoList) / 100));
+        final int team1Size = teamSize(0, idArray, userInfoList);
+        final int iTeam1Sr = team1Size == 0 ?
+                team1Sr : (int) (team1Sr + (team1Sr * inflateTeamSr(team1Sr / team1Size, 0, idArray, userInfoList) / 100));
         team2Sr = getTeamSr(6, idArray, userInfoList);
-        final int iTeam2Sr = (int) (team2Sr + (team2Sr * inflateTeamSr(team2Sr / teamSize(6, idArray, userInfoList), 6, idArray, userInfoList) / 100));
+        final int team2Size = teamSize(6, idArray, userInfoList);
+        final int iTeam2Sr = team2Size == 0 ?
+                team2Sr : (int) (team2Sr + (team2Sr * inflateTeamSr(team2Sr / team2Size, 6, idArray, userInfoList) / 100));
         return (((float) Math.min(iTeam1Sr, iTeam2Sr)) * div) / ((float) Math.max(iTeam2Sr, iTeam1Sr));
     }
 

@@ -2,16 +2,20 @@ import React, {FormEvent} from "react";
 import axios from "axios";
 // @ts-ignore
 import {Notific8} from 'notific8';
-import "../../node_modules/notific8/src/sass/notific8.scss";
+import "notific8/src/sass/notific8.scss";
 // @ts-ignore
-import {Button, Checkbox, Dialog, TagInput} from "metro4-react";
+import {Button, Checkbox, Dialog, Select, TagInput} from "metro4-react";
+import DeletePlayerDialog from "../deleteplayerdialog/DeletePlayerDialog";
+import AddPlayerDialog from "../addplayerdialog/AddPlayerDialog";
 
-type AddPlayerDialogProps = {
+type EditPlayerDialogProps = {
     // using `interface` is also ok
-    onClose: any
-    onUpdate: any
+    onClose: any;
+    data?: Array<JSX.Element>;
+    onUpdate: any;
 };
-type AddPlayerDialogState = {
+type EditPlayerDialogState = {
+    id?: number;
     tankPref?: number;
     supportPref?: number;
     dpsPref?: number;
@@ -19,22 +23,25 @@ type AddPlayerDialogState = {
     supportSr?: number;
     dpsSr?: number;
     username?: string;
-    owNames?: Array<string>
+    owNames?: Array<string>;
+    showDeletePlayerDialog: boolean;
 };
 
-class AddPlayerDialog extends React.Component<AddPlayerDialogProps, AddPlayerDialogState> {
-    constructor(props: AddPlayerDialogProps) {
+class EditPlayerDialog extends React.Component<EditPlayerDialogProps, EditPlayerDialogState> {
+    constructor(props: EditPlayerDialogProps) {
         super(props);
 
         this.state = {
-            tankPref: 1,
-            supportPref: 1,
-            dpsPref: 1,
-            tankSr: 2500,
-            supportSr: 2500,
-            dpsSr: 2500,
+            id: -1,
+            tankPref: -1,
+            supportPref: -1,
+            dpsPref: -1,
+            tankSr: undefined,
+            supportSr: undefined,
+            dpsSr: undefined,
             username: "",
-            owNames: []
+            owNames: [],
+            showDeletePlayerDialog: false
         };
 
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -46,6 +53,11 @@ class AddPlayerDialog extends React.Component<AddPlayerDialogProps, AddPlayerDia
         this.handleDpsSrChange = this.handleDpsSrChange.bind(this);
         this.handleUsernameChange = this.handleUsernameChange.bind(this);
         this.handleOwNamesChange = this.handleOwNamesChange.bind(this);
+        this.onSelectChange = this.onSelectChange.bind(this);
+    }
+
+    componentDidMount() {
+        this.setDisabled(true);
     }
 
     async handleSubmit(e: FormEvent) {
@@ -56,12 +68,13 @@ class AddPlayerDialog extends React.Component<AddPlayerDialogProps, AddPlayerDia
 
     resetState() {
         this.setState({
-            tankPref: 1,
-            supportPref: 1,
-            dpsPref: 1,
-            tankSr: 2500,
-            supportSr: 2500,
-            dpsSr: 2500,
+            id: -1,
+            tankPref: -1,
+            supportPref: -1,
+            dpsPref: -1,
+            tankSr: undefined,
+            supportSr: undefined,
+            dpsSr: undefined,
             username: "",
             owNames: []
         });
@@ -71,7 +84,7 @@ class AddPlayerDialog extends React.Component<AddPlayerDialogProps, AddPlayerDia
         let message = "Invalid request";
         let color = "ruby";
         try {
-            const response = await axios.post("/api/v1/users/-1", {
+            const response = await axios.post("/api/v1/users/" + this.state.id, {
                 username: this.state.username,
                 overwatchNames: this.state.owNames,
                 tankSr: this.state.tankSr,
@@ -84,11 +97,9 @@ class AddPlayerDialog extends React.Component<AddPlayerDialogProps, AddPlayerDia
                 responseType: "json",
             });
             if (response.status === 200) {
-                message = "User create successfully";
+                message = "User updated successfully";
                 color = "lime";
             }
-            // @ts-ignore
-            this.resetState();
         } catch (e) {
             if (e.message.endsWith("406")) {
                 message = "Invalid data"
@@ -149,11 +160,108 @@ class AddPlayerDialog extends React.Component<AddPlayerDialogProps, AddPlayerDia
         document.getElementById("addUserForm").submit();
     }
 
+    setDisabled(bool: Boolean) {
+        let frm = document.getElementById("editUserForm");
+        let sbbtn = document.getElementById("subButton");
+        let delbtn = document.getElementById("delButton");
+        if (bool) {
+            // @ts-ignore
+            frm.classList.add("disabled");
+            // @ts-ignore
+            sbbtn.classList.add("disabled");
+            // @ts-ignore
+            delbtn.classList.add("disabled");
+        } else {
+            // @ts-ignore
+            frm.classList.remove("disabled");
+            // @ts-ignore
+            sbbtn.classList.remove("disabled");
+            // @ts-ignore
+            delbtn.classList.remove("disabled");
+        }
+    }
+
+    getUserInfo(id: number) {
+        let sState = this;
+        axios.get("/api/v1/users/" + id, {
+            responseType: "json",
+        }).then(function (response) {
+            if (response.status === 200) {
+                sState.setState({
+                    id: id,
+                    tankPref: Number.parseInt(response.data["api"]["userInfo"]["tankPreference"]),
+                    supportPref: Number.parseInt(response.data["api"]["userInfo"]["supportPreference"]),
+                    dpsPref: Number.parseInt(response.data["api"]["userInfo"]["dpsPreference"]),
+                    tankSr: Number.parseInt(response.data["api"]["userInfo"]["tankSr"]),
+                    supportSr: Number.parseInt(response.data["api"]["userInfo"]["supportSr"]),
+                    dpsSr: Number.parseInt(response.data["api"]["userInfo"]["dpsSr"]),
+                    username: response.data["api"]["userInfo"]["name"],
+                    owNames: response.data["api"]["owNames"]
+                });
+                sState.setDisabled(false);
+            }
+        }).catch(function (response) {
+            let message = "Error getting users";
+            // @ts-ignore
+            Notific8.create(message, {themeColor: 'ruby', life: 4000}).then((notification) => {
+                // open the notification
+                notification.open();
+            });
+        });
+    }
+
+    deleteUserInfo(id: number | undefined) {
+        let sState = this;
+        axios.delete("/api/v1/users/" + id, {
+            responseType: "json",
+        }).then(function (response) {
+            if (response.status === 200) {
+                sState.resetState();
+                sState.setDisabled(true);
+            }
+            sState.props.onUpdate();
+        }).catch(function (response) {
+            let message = "Error deleting user";
+            // @ts-ignore
+            Notific8.create(message, {themeColor: 'ruby', life: 4000}).then((notification) => {
+                // open the notification
+                notification.open();
+            });
+        });
+    }
+
+    onSelectChange() {
+        let selected = undefined;
+        // @ts-ignore
+        for (let option of document.getElementById("editSelect").options) {
+            if (option.selected) {
+                selected = option.value;
+                break;
+            }
+        }
+        if (selected !== undefined) {
+            this.getUserInfo(selected);
+        }
+    }
+
     render() {
-        return (<Dialog cls="success" open={true} modal={true} overlayAlpha={0.5} overlayColor={"#000000"}
-                        onClose={this.props.onClose()} title="Add New Player"
+        let ref = this;
+        let dialog = <div/>;
+        if (this.state.showDeletePlayerDialog) {
+            dialog = <DeletePlayerDialog playerName={this.state.username} onClose={() => function () {
+                ref.setState({showDeletePlayerDialog: false})
+            }} onDelete={function () {
+                ref.deleteUserInfo(ref.state.id);
+                ref.setState({showDeletePlayerDialog: false});
+            }}/>;
+        }
+        return (<Dialog cls="primary" open={true} modal={true} overlayAlpha={0.5} overlayColor={"#000000"}
+                        onClose={this.props.onClose()} title="Edit Player"
                         clsActions={"form-group d-flex flex-justify-end"}>
-            <form id={"addUserForm"} onSubmit={(e) => this.handleSubmit(e)}>
+            <Select cls={"mb-3"} onChange={this.onSelectChange} selectId={"editSelect"} value={this.state.id}>
+                {this.props.data}
+            </Select>
+            <form id={"editUserForm"} onSubmit={(e) => this.handleSubmit(e)}>
                 <div className="form-group">
                     <label>Discord Username</label>
                     <input type="text" placeholder="Enter discord username" onChange={this.handleUsernameChange}
@@ -202,10 +310,19 @@ class AddPlayerDialog extends React.Component<AddPlayerDialogProps, AddPlayerDia
                     <Checkbox caption={"No Support"} onChange={() => this.supportCheckBox(0)}
                               checked={this.state.supportPref === 0}/>
                 </div>
-                <Button cls={"button success form-control mb-4"} title={"Create User"} type={"submit"}/>
+                <div className="form-group">
+                    <Button id={"subButton"} cls={"button primary form-control mb-4"} title={"Submit User Changes"}
+                            type={"submit"}/>
+                    <Button id={"delButton"} cls={"button alert form-control mb-4"} title={"Delete User"}
+                            onClick={(e: any) => {
+                                e.preventDefault();
+                                this.setState({showDeletePlayerDialog: true});
+                            }}/>
+                </div>
             </form>
+            {dialog}
         </Dialog>);
     }
 }
 
-export default AddPlayerDialog;
+export default EditPlayerDialog;

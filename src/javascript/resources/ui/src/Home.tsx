@@ -5,8 +5,8 @@ import {Notific8} from 'notific8';
 import "../node_modules/notific8/src/sass/notific8.scss";
 // @ts-ignore
 import {Button, Dropdown, MultiAction, MultiActionItem, Select} from "metro4-react";
-import AddPlayerDialog from "./components/AddPlayerDialog";
-import EditPlayerDialog from "./components/EditPlayerDialog";
+import AddPlayerDialog from "./components/addplayerdialog/AddPlayerDialog";
+import EditPlayerDialog from "./components/editplayerdialog/EditPlayerDialog";
 import BalanceTablePage from "./models/BalanceTablePage";
 
 type LoginProps = {
@@ -14,7 +14,7 @@ type LoginProps = {
 };
 type LoginState = {
     selectData?: Array<JSX.Element>;
-    selectedSelectData?: Array<string>;
+    selectedSelectData: Array<string>;
     tablePages: Array<BalanceTablePage>;
     selectedPage: number;
     showAddPlayerDialog?: boolean;
@@ -120,6 +120,8 @@ class Home extends React.Component<LoginProps, LoginState> {
                 let mm = new Array<JSX.Element>();
                 let editUserList = new Array<JSX.Element>();
                 let index = 0;
+                let idMap = new Map<number, number>();
+                let tList = new Array<string>();
                 response.data["api"]["users"].forEach(function (value: Object) {
                     // @ts-ignore
                     let id = value["id"];
@@ -127,9 +129,16 @@ class Home extends React.Component<LoginProps, LoginState> {
                     editUserList.push(<option value={id}>{value["discordName"]}</option>)
                     // @ts-ignore
                     value["owNames"].forEach(function (value: Object) {
-                        let key = Object.keys(value)[0];
+                        let idNum = idMap.get(id);
+                        if(idNum !== undefined) {
+                            idNum += 1;
+                        } else {
+                            idNum = 0;
+                        }
                         // @ts-ignore
-                        mm.push(<option value={(index++) + "#" + id}>{value}</option>);
+                        mm.push(<option value={idNum + "#" + id}>{value}</option>);
+                        idMap.set(id, idNum);
+                        tList.push(idNum + "#" + id);
                     });
                 });
                 if (notify) {
@@ -140,7 +149,14 @@ class Home extends React.Component<LoginProps, LoginState> {
                         notification.open();
                     });
                 }
-                sState.setState({selectData: mm, editUserList: editUserList});
+                let selData = new Array<string>();
+                sState.state.selectedSelectData.forEach(function (item) {
+                    if(tList.indexOf(item) !== -1) {
+                        selData.push(item);
+                    }
+                });
+
+                sState.setState({selectData: mm, editUserList: editUserList, selectedSelectData: selData});
             }
         }).catch(function (response) {
             let message = "Error getting users";
@@ -199,7 +215,6 @@ class Home extends React.Component<LoginProps, LoginState> {
                 responseType: "json",
             });
             if (response.status === 200) {
-                console.log(selectedData)
                 let dataList = new Array<BalanceTablePage>();
                 dataList.push(new BalanceTablePage(this.initTable(), new Array<JSX.Element>(), this.initTable(), new Array<JSX.Element>()));
                 response.data["api"]["userList"].forEach(function (valList: Array<any>, index1: number) {
@@ -267,10 +282,6 @@ class Home extends React.Component<LoginProps, LoginState> {
                     dataList[index + 1].table2MetaRows = team2Meta;
                 });
 
-
-                console.log(dataList);
-
-
                 this.setState({
                     selectedSelectData: selectedData,
                     tablePages: dataList,
@@ -312,10 +323,6 @@ class Home extends React.Component<LoginProps, LoginState> {
                 // @ts-ignore
                 return user["supportSr"];
         }
-    }
-
-    call() {
-        console.log("call");
     }
 
     changeTablePage(val: number) {
