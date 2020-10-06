@@ -31,6 +31,8 @@ import io.javalin.apibuilder.ApiBuilder;
 import io.javalin.http.staticfiles.Location;
 import net.reallifegames.ow.api.v1.ApiController;
 import net.reallifegames.ow.api.v1.balance.BalanceController;
+import net.reallifegames.ow.api.v1.datas.get.ExportDataController;
+import net.reallifegames.ow.api.v1.datas.post.ImportDataController;
 import net.reallifegames.ow.api.v1.users.UsersController;
 import net.reallifegames.ow.api.v1.users.delete.UsersDeleteController;
 import net.reallifegames.ow.api.v1.users.post.UsersPostController;
@@ -113,6 +115,8 @@ public class Balancer {
             ApiBuilder.post("/users/:id", UsersPostController::postNewUser);
             ApiBuilder.delete("/users/:id", UsersDeleteController::deleteUser);
             ApiBuilder.post("/balance", BalanceController::postBalance);
+            ApiBuilder.get("/datas", ExportDataController::getApplicationData);
+            ApiBuilder.post("/datas", ImportDataController::postApplicationData);
         }));
         javalinApp.start(8080);
     }

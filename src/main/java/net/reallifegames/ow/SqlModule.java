@@ -24,6 +24,8 @@
 package net.reallifegames.ow;
 
 import net.reallifegames.ow.models.UserInfo;
+import net.reallifegames.ow.models.UserInfoTableModel;
+import net.reallifegames.ow.models.UserNamesTableModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +57,7 @@ public abstract class SqlModule implements DbModule {
     private static final String INSERT_NEW_OW_NAME = "INSERT INTO `alt_user_names`(`id`, `name`) VALUES (?, ?);";
     private static final String UPDATE_USER_INFO = "UPDATE `user_info` SET `name`=?,`tank_pref`=?,`dps_pref`=?,`support_pref`=?,`tank_sr`=?,`dps_sr`=?,`support_sr`=? WHERE `id`=?;";
     private static final String DELETE_USER_INFO = "DELETE FROM `user_info` WHERE `id`=?;";
+    private static final String QUERY_USER_DATA_LIST = "SELECT * FROM `user_info`;";
 
     @Override
     public void createTables(@Nonnull final String... tableStatements) {
@@ -340,6 +343,59 @@ public abstract class SqlModule implements DbModule {
             return false;
         }
         return true;
+    }
+
+    /**
+     * @return the entire user table.
+     */
+    @Override
+    public List<UserInfoTableModel> getAllUserTableData() {
+        List<UserInfoTableModel> userInfoList = new ArrayList<>();
+        try (final Connection connection = getConnection()) {
+            final PreparedStatement queryStatement = connection.prepareStatement(QUERY_USER_DATA_LIST);
+            // Execute update
+            final ResultSet resultSet = queryStatement.executeQuery();
+            while (resultSet.next()) {
+                userInfoList.add(new UserInfoTableModel(
+                        resultSet.getInt("id"),
+                        resultSet.getString("name"),
+                        resultSet.getInt("tank_pref"),
+                        resultSet.getInt("support_pref"),
+                        resultSet.getInt("dps_pref"),
+                        resultSet.getInt("tank_sr"),
+                        resultSet.getInt("support_sr"),
+                        resultSet.getInt("dps_sr")
+                ));
+            }
+            resultSet.close();
+            queryStatement.close();
+        } catch (SQLException e) {
+            LOGGER.debug("Get user information sql error.", e);
+        }
+        return userInfoList;
+    }
+
+    /**
+     * @return the entire user names table.
+     */
+    @Override
+    public List<UserNamesTableModel> getAllUsersNames() {
+        final List<UserNamesTableModel> userList = new ArrayList<>();
+        try (final Connection connection = getConnection()) {
+            final PreparedStatement queryStatement = connection.prepareStatement(QUERY_USER_LIST);
+            final ResultSet resultSet = queryStatement.executeQuery();
+            while (resultSet.next()) {
+                userList.add(new UserNamesTableModel(
+                        resultSet.getInt("id"),
+                        resultSet.getString("name")
+                ));
+            }
+            resultSet.close();
+            queryStatement.close();
+        } catch (SQLException e) {
+            LOGGER.debug("Get user list sql error.", e);
+        }
+        return userList;
     }
 
     /**

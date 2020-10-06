@@ -34,9 +34,9 @@ public final class SqLiteModule extends SqlModule {
     /**
      * The sql query for creating a users table.
      */
-    private static final String CREATE_USERS_TABLE = "CREATE TABLE IF NOT EXISTS `user_info` (`id` int(11) NOT NULL,`name` varchar(32)" +
+    private static final String CREATE_USERS_TABLE = "CREATE TABLE IF NOT EXISTS `user_info` (`id` INTEGER PRIMARY KEY NOT NULL,`name` varchar(32)" +
             " NOT NULL,`tank_pref` tinyint(4) NOT NULL,`support_pref` tinyint(4) NOT NULL,`dps_pref` tinyint(4) " +
-            "NOT NULL,`tank_sr` int(11) NOT NULL,`support_sr` int(11) NOT NULL,`dps_sr` int(11) NOT NULL, PRIMARY KEY (`id`))";
+            "NOT NULL,`tank_sr` int(11) NOT NULL,`support_sr` int(11) NOT NULL,`dps_sr` int(11) NOT NULL)";
 
     /**
      * The sql query for creating a dash table.

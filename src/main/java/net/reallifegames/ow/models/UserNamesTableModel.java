@@ -23,21 +23,19 @@
  */
 package net.reallifegames.ow.models;
 
-import javax.annotation.Nonnull;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class UserInfo extends UserInfoTableModel{
+public class UserNamesTableModel {
 
-    public final int totalPref;
+    public final int id;
 
-    public UserInfo(final int id,
-                    @Nonnull final String name,
-                    final int tankPreference,
-                    final int supportPreference,
-                    final int dpsPreference,
-                    final int tankSr,
-                    final int supportSr,
-                    final int dpsSr) {
-        super(id, name, tankPreference, supportPreference, dpsPreference, tankSr, supportSr, dpsSr);
-        totalPref = tankPreference + dpsPreference + supportPreference;
+    public final String name;
+
+    @JsonCreator
+    public UserNamesTableModel(@JsonProperty ("id")  int id,
+                               @JsonProperty ("name")  String name) {
+        this.id = id;
+        this.name = name;
     }
 }

@@ -8,6 +8,9 @@ import {Button, Dropdown, MultiAction, MultiActionItem, Select} from "metro4-rea
 import AddPlayerDialog from "./components/addplayerdialog/AddPlayerDialog";
 import EditPlayerDialog from "./components/editplayerdialog/EditPlayerDialog";
 import BalanceTablePage from "./models/BalanceTablePage";
+import DefaultStyle from "./components/style/DefaultStyle";
+import ExportDataDialog from "./components/exportdatadialog/ExportDataDialog";
+import ImportDataDialog from "./components/importdatadialog/ImportDataDialog";
 
 type LoginProps = {
     // using `interface` is also ok
@@ -19,7 +22,10 @@ type LoginState = {
     selectedPage: number;
     showAddPlayerDialog?: boolean;
     showEditPlayerDialog?: boolean;
+    showExportDataDialog?: boolean;
+    showImportDataDialog?: boolean
     editUserList?: Array<JSX.Element>;
+    style: string;
 };
 
 class Home extends React.Component<LoginProps, LoginState> {
@@ -37,13 +43,18 @@ class Home extends React.Component<LoginProps, LoginState> {
             selectedPage: 0,
             showAddPlayerDialog: false,
             showEditPlayerDialog: false,
-            editUserList: new Array<JSX.Element>()
+            showExportDataDialog: false,
+            showImportDataDialog: false,
+            editUserList: new Array<JSX.Element>(),
+            style: "default"
         };
 
         this.handleSubmit = this.handleSubmit.bind(this);
         this.fetchNewUsers = this.fetchNewUsers.bind(this);
         this.openAddUserDialog = this.openAddUserDialog.bind(this);
         this.openEditUserDialog = this.openEditUserDialog.bind(this);
+        this.openExportDataDialog = this.openExportDataDialog.bind(this);
+        this.openImportDataDialog = this.openImportDataDialog.bind(this);
     }
 
     initTable() {
@@ -109,6 +120,14 @@ class Home extends React.Component<LoginProps, LoginState> {
 
     openEditUserDialog() {
         this.setState({showEditPlayerDialog: true});
+    }
+
+    openExportDataDialog() {
+        this.setState({showExportDataDialog: true});
+    }
+
+    openImportDataDialog() {
+        this.setState({showImportDataDialog: true});
     }
 
     getUserList(notify: boolean) {
@@ -334,6 +353,12 @@ class Home extends React.Component<LoginProps, LoginState> {
     render() {
         let ref = this;
         let dialog = <div/>;
+        let stylea;
+        if (this.state.style === "default") {
+            stylea = <DefaultStyle/>
+        } else {
+            stylea = <DefaultStyle/>
+        }
         if (this.state.showAddPlayerDialog) {
             dialog = <AddPlayerDialog onClose={() => function () {
                 ref.setState({showAddPlayerDialog: false})
@@ -342,8 +367,17 @@ class Home extends React.Component<LoginProps, LoginState> {
             dialog = <EditPlayerDialog onClose={() => function () {
                 ref.setState({showEditPlayerDialog: false})
             }} data={this.state.editUserList} onUpdate={this.fetchNewUsers}/>;
+        } else if (this.state.showExportDataDialog) {
+            dialog = <ExportDataDialog onClose={() => function () {
+                ref.setState({showExportDataDialog: false})
+            }}/>;
+        } else if (this.state.showImportDataDialog) {
+            dialog = <ImportDataDialog onClose={() => function () {
+                ref.setState({showExportDataDialog: false})
+            }} onUpdate={this.fetchNewUsers}/>;
         }
         return <div id="parent" className="container container-mod">
+            {stylea}
             <Select multiple={true} value={this.state.selectedSelectData} id="sl">
                 {this.state.selectData}
             </Select>
@@ -450,7 +484,8 @@ class Home extends React.Component<LoginProps, LoginState> {
                 <MultiActionItem icon="refresh" onClick={() => this.fetchNewUsers()}/>
                 <MultiActionItem icon="user-plus" onClick={() => this.openAddUserDialog()}/>
                 <MultiActionItem icon="users" onClick={() => this.openEditUserDialog()}/>
-                <MultiActionItem icon="cog" className="disabled"/>
+                <MultiActionItem icon="file-download" onClick={() => this.openExportDataDialog()}/>
+                <MultiActionItem icon="file-upload" onClick={() => this.openImportDataDialog()}/>
             </MultiAction>
             {dialog}
         </div>;

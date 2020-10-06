@@ -21,23 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.reallifegames.ow.models;
+package net.reallifegames.ow.api.v1.datas.get;
+
+import net.reallifegames.ow.models.UserInfoTableModel;
+import net.reallifegames.ow.models.UserNamesTableModel;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
-public class UserInfo extends UserInfoTableModel{
+public class ExportDataResponse {
 
-    public final int totalPref;
+    public final List<UserInfoTableModel> userInfo;
 
-    public UserInfo(final int id,
-                    @Nonnull final String name,
-                    final int tankPreference,
-                    final int supportPreference,
-                    final int dpsPreference,
-                    final int tankSr,
-                    final int supportSr,
-                    final int dpsSr) {
-        super(id, name, tankPreference, supportPreference, dpsPreference, tankSr, supportSr, dpsSr);
-        totalPref = tankPreference + dpsPreference + supportPreference;
+    public final List<UserNamesTableModel> userNames;
+
+    public ExportDataResponse(@Nonnull final List<UserInfoTableModel> userInfo, @Nonnull final List<UserNamesTableModel> userNames) {
+        this.userInfo = userInfo;
+        this.userNames = userNames;
     }
 }

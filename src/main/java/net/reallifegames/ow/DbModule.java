@@ -24,6 +24,8 @@
 package net.reallifegames.ow;
 
 import net.reallifegames.ow.models.UserInfo;
+import net.reallifegames.ow.models.UserInfoTableModel;
+import net.reallifegames.ow.models.UserNamesTableModel;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -152,4 +154,14 @@ public interface DbModule {
                        final int dpsPreference,
                        final int supportSr,
                        final int supportPreference);
+
+    /**
+     * @return the entire user table.
+     */
+    List<UserInfoTableModel> getAllUserTableData();
+
+    /**
+     * @return the entire user names table.
+     */
+    List<UserNamesTableModel> getAllUsersNames();
 }

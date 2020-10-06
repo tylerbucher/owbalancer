@@ -21,23 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.reallifegames.ow.models;
+package net.reallifegames.ow.api.v1.datas.post;
+
+import net.reallifegames.ow.api.v1.ApiResponse;
 
 import javax.annotation.Nonnull;
 
-public class UserInfo extends UserInfoTableModel{
+public class ImportDataResponse extends ApiResponse {
 
-    public final int totalPref;
+    /**
+     * The return status message.
+     */
+    public final String message;
 
-    public UserInfo(final int id,
-                    @Nonnull final String name,
-                    final int tankPreference,
-                    final int supportPreference,
-                    final int dpsPreference,
-                    final int tankSr,
-                    final int supportSr,
-                    final int dpsSr) {
-        super(id, name, tankPreference, supportPreference, dpsPreference, tankSr, supportSr, dpsSr);
-        totalPref = tankPreference + dpsPreference + supportPreference;
+    /**
+     * Response constructor for Jackson json marshalling.
+     *
+     * @param apiResponse the root api response.
+     * @param message     The return status message.
+     */
+    public ImportDataResponse(@Nonnull final ApiResponse apiResponse, @Nonnull final String message) {
+        super(apiResponse.version);
+        this.message = message;
     }
 }
