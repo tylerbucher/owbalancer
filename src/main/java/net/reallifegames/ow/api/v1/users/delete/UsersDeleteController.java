@@ -26,30 +26,42 @@ package net.reallifegames.ow.api.v1.users.delete;
 import io.javalin.http.Context;
 import net.reallifegames.ow.Balancer;
 import net.reallifegames.ow.DbModule;
+import net.reallifegames.ow.Permissions;
 import net.reallifegames.ow.api.v1.ApiController;
-import net.reallifegames.ow.api.v1.users.post.UsersPostResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
+/**
+ * Attempts to delete a user.
+ *
+ * @author Tyler Bucher
+ */
 public class UsersDeleteController {
 
     /**
-     * Default create user success response.
+     * The static logger for this version of the api.
      */
-    private static final UsersPostResponse successResponse = new UsersPostResponse(ApiController.apiResponse, "success");
+    public static final Logger LOGGER = LoggerFactory.getLogger(UsersDeleteController.class);
 
     /**
-     * Default create user error response.
+     * Default list of permissions for this endpoint.
      */
-    private static final UsersPostResponse errorResponse = new UsersPostResponse(ApiController.apiResponse, "error");
+    private static final List<Integer> PERMISSIONS = Arrays.asList(
+            Permissions.IS_USER_ADMIN.value,
+            Permissions.IS_USER_SUPER_ADMIN.value,
+            Permissions.CAN_USER_DELETE_USERS.value
+    );
 
     /**
      * Attempts to create a new user from the post data.
      *
      * @param context the REST request context to modify.
      */
-    public static void deleteUser(@Nonnull final Context context) throws IOException {
+    public static void deleteUser(@Nonnull final Context context) {
         deleteUser(context, Balancer.getDbModule());
     }
 
@@ -58,25 +70,23 @@ public class UsersDeleteController {
      *
      * @param context  the REST request context to modify.
      * @param dbModule the module instance to use.
-     * @throws IOException if the object could not be marshaled.
      */
     public static void deleteUser(@Nonnull final Context context,
-                                  @Nonnull final DbModule dbModule) throws IOException {
-        // Set the response type
-        final Integer param = context.pathParam(":id", Integer.class).getOrNull();
-        if (param == null || param == -1) {
-            ApiController.LOGGER.debug("Delete user  path param error");
+                                  @Nonnull final DbModule dbModule) {
+        ApiController.beforeApiAuthentication(context, Balancer.getDbModule(), Balancer.getSecurityModule(), PERMISSIONS);
+        final String[] path = context.path().split("/");
+        if (path.length != 5) {
             context.status(400);
             context.result("Bad Request");
+            return;
+        }
+        final DeleteUserRequest postRequest = new DeleteUserRequest(path[4]);
+        if (!postRequest.deletePlayer(dbModule)) {
+            context.status(409);
+            context.result("Conflict");
         } else {
-            final DeleteUserRequest deleteUserRequest = new DeleteUserRequest(param);
-            if (!deleteUserRequest.deletePlayer(dbModule)) {
-                context.status(406);
-                context.result("Not Acceptable");
-            } else {
-                context.status(200);
-                context.result("Success");
-            }
+            context.status(200);
+            context.result("Success");
         }
     }
 }

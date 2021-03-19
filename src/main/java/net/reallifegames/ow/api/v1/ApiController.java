@@ -26,12 +26,17 @@ package net.reallifegames.ow.api.v1;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.io.SegmentedStringWriter;
 import io.javalin.http.Context;
+import io.javalin.http.UnauthorizedResponse;
 import net.reallifegames.ow.Balancer;
+import net.reallifegames.ow.DbModule;
+import net.reallifegames.ow.SecurityModule;
+import net.reallifegames.ow.models.UserModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Base Api controller, handles initial authentication and api versioning responses.
@@ -49,6 +54,28 @@ public class ApiController {
      * Global api version response.
      */
     public static final ApiResponse apiResponse = new ApiResponse("v1");
+
+    /**
+     * Should be called before all secure api end-points.
+     *
+     * @param context the REST request context to modify.
+     */
+    public static UserModel beforeApiAuthentication(@Nonnull final Context context,
+                                               @Nonnull final DbModule dbModule,
+                                               @Nonnull final SecurityModule securityModule,
+                                               @Nonnull final List<Integer> permissions) {
+        // Set response type
+        context.contentType("application/json");
+        // Check if user is authenticated
+        final String email = securityModule.getJWSEmailClaim(context.cookie("cgbAuthToken"));
+        final UserModel userModel = dbModule.getUserModelByEmail(email);
+        if (email.equals("") || userModel == null || !userModel.hasPermission(permissions)) {
+            context.status(401);
+            context.result("Unauthorized");
+            throw new UnauthorizedResponse("Unauthorized");
+        }
+        return userModel;
+    }
 
     /**
      * Returns the current version of this api.

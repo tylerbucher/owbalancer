@@ -23,7 +23,7 @@
  */
 package net.reallifegames.ow.balancer;
 
-import net.reallifegames.ow.models.UserInfo;
+import net.reallifegames.ow.models.PlayerModel;
 
 import javax.annotation.Nonnull;
 
@@ -34,13 +34,13 @@ public class PlayerPositionBalancer {
 
     public float calcPlayerPrimaryScore(final float div,
                                         @Nonnull final int[] idArray,
-                                        @Nonnull final UserInfo[] userInfoList) {
+                                        @Nonnull final PlayerModel[] userInfoList) {
         team1PositionPreferenceCount = calcTeamPrimaryPosition(0, idArray, userInfoList);
         team2PositionPreferenceCount = calcTeamPrimaryPosition(6, idArray, userInfoList);
         return (((float) team1PositionPreferenceCount + team2PositionPreferenceCount) * div) / 24.0f;
     }
 
-    private static int calcTeamPrimaryPosition(final int offset, @Nonnull final int[] idArray, @Nonnull final UserInfo[] userInfoList) {
+    private static int calcTeamPrimaryPosition(final int offset, @Nonnull final int[] idArray, @Nonnull final PlayerModel[] userInfoList) {
         return userInfoList[idArray[offset]].tankPreference +
                 userInfoList[idArray[offset + 1]].tankPreference +
                 userInfoList[idArray[offset + 2]].dpsPreference +

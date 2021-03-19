@@ -23,7 +23,7 @@
  */
 package net.reallifegames.ow.api.v1.balance;
 
-import net.reallifegames.ow.models.UserInfo;
+import net.reallifegames.ow.models.PlayerModel;
 
 import javax.annotation.Nonnull;
 
@@ -61,7 +61,7 @@ public class BalancedPlayer {
     /**
      * The users information.
      */
-    public final UserInfo user;
+    public final PlayerModel user;
 
     /**
      * @param team     the team the user is on. 0 or 1.
@@ -69,7 +69,7 @@ public class BalancedPlayer {
      *                 BalancedPlayer#DPS_POSITION}
      * @param user     the users information.
      */
-    public BalancedPlayer(final int team, final int position, @Nonnull final UserInfo user) {
+    public BalancedPlayer(final int team, final int position, @Nonnull final PlayerModel user) {
         this.team = team;
         this.position = position;
         this.user = user;

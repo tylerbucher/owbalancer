@@ -23,7 +23,7 @@
  */
 package net.reallifegames.ow.balancer;
 
-import net.reallifegames.ow.models.UserInfo;
+import net.reallifegames.ow.models.PlayerModel;
 
 import javax.annotation.Nonnull;
 
@@ -33,7 +33,7 @@ public class TeamRoleSRBalancer {
 
     public float calcTeamRoleDifference(final float div,
                                         @Nonnull final int[] idArray,
-                                        @Nonnull final UserInfo[] userInfoList) {
+                                        @Nonnull final PlayerModel[] userInfoList) {
         final int team1TankSr = userInfoList[idArray[0]].tankSr + userInfoList[idArray[1]].tankSr;
         final int team1DpsSr = userInfoList[idArray[2]].dpsSr + userInfoList[idArray[3]].dpsSr;
         final int team1SupportSr = userInfoList[idArray[4]].supportSr + userInfoList[idArray[5]].supportSr;

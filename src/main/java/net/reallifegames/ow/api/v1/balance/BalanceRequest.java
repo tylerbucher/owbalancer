@@ -42,7 +42,7 @@ public class BalanceRequest {
     /**
      * The username to check the password for.
      */
-    private final List<Integer> users;
+    private final List<String> users;
 
     /**
      * Constructor for Jackson json marshalling.
@@ -50,7 +50,7 @@ public class BalanceRequest {
      * @param users the requested login username.
      */
     @JsonCreator
-    public BalanceRequest(@Nonnull @JsonProperty ("userIds") final List<Integer> users) {
+    public BalanceRequest(@Nonnull @JsonProperty ("userIds") final List<String> users) {
         this.users = users;
     }
 

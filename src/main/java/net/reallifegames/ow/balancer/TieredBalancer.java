@@ -25,8 +25,7 @@ package net.reallifegames.ow.balancer;
 
 import net.reallifegames.ow.DbModule;
 import net.reallifegames.ow.api.v1.balance.BalancedPlayer;
-import net.reallifegames.ow.models.TeamBalanceResult;
-import net.reallifegames.ow.models.UserInfo;
+import net.reallifegames.ow.models.PlayerModel;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -34,11 +33,13 @@ import java.util.List;
 
 public class TieredBalancer {
 
+    /**
+     *
+     */
     private final List<TeamBalanceResult> teamBalanceResultList = new ArrayList<>();
-    private final UserInfo[] userInfoArray = new UserInfo[13];
+    private final PlayerModel[] userInfoArray = new PlayerModel[13];
 
     private final PlayerPositionBalancer playerPositionBalancer = new PlayerPositionBalancer();
-    private final TeamAdaptabilityBalancer teamAdaptabilityBalancer = new TeamAdaptabilityBalancer();
     private final TeamRoleSRBalancer teamRoleSRBalancer = new TeamRoleSRBalancer();
     private final TeamSRBalancer teamSRBalancer = new TeamSRBalancer();
 
@@ -48,10 +49,10 @@ public class TieredBalancer {
         }
     }
 
-    public TieredBalancerResponse balancePlayers(@Nonnull final DbModule dbModule, @Nonnull final List<Integer> players) {
-        final List<UserInfo> userInfoList = dbModule.getUserResponses(players.stream().mapToInt(i->i).toArray());
+    public TieredBalancerResponse balancePlayers(@Nonnull final DbModule dbModule, @Nonnull final List<String> players) {
+        final List<PlayerModel> userInfoList = dbModule.getPlayerModelsFromUuids(players);
         final int[] balanceArray = new int[12];
-        userInfoArray[0] = new UserInfo(0, "", 0, 0, 0, 0, 0, 0);
+        userInfoArray[0] = new PlayerModel("", "", 0, 0, 0, 0, 0, 0, new String[0]);
         for (int i = 0; i < userInfoList.size(); i++) {
             balanceArray[i] = i + 1;
             userInfoArray[i + 1] = userInfoList.get(i);
@@ -67,8 +68,8 @@ public class TieredBalancer {
             final List<BalancedPlayer> balancedPlayerList = new ArrayList<>();
 
             for (int i = 0; i < 12; i++) {
-                final UserInfo userInfo = userInfoArray[balanceResult.getTeam()[i]];
-                if (userInfo != null && userInfo.id != 0) {
+                final PlayerModel userInfo = userInfoArray[balanceResult.getTeam()[i]];
+                if (userInfo != null && !userInfo.uuid.equals("")) {
                     final int pos = getBalancedPlayerPosition(i);
                     balancedPlayerList.add(new BalancedPlayer(i < 6 ? 1 : 2, pos, userInfo));
                 }
@@ -122,20 +123,18 @@ public class TieredBalancer {
                                                 for (int t = 0; t < 4; t += 2) {           // End of nested loops for team 2 permutations.
                                                     swap(arr, 8, 8 + t);
                                                     swap(arr, 9, 9 + t);
-                                                    final float teamSr = teamSRBalancer.calcTeamSrDifference(1.0f, arr, userInfoArray);
-                                                    final float adpScore = teamAdaptabilityBalancer.calcTeamAdaptabilityScore(2.0f, arr, userInfoArray);
-                                                    final float roleScore = teamRoleSRBalancer.calcTeamRoleDifference(4.0f, arr, userInfoArray);
-                                                    final float positionScore = playerPositionBalancer.calcPlayerPrimaryScore(8.0f, arr, userInfoArray);
-                                                    final float total = teamSr + adpScore + roleScore + positionScore;
+                                                    final float roleScore = teamRoleSRBalancer.calcTeamRoleDifference(1.0f, arr, userInfoArray);
+                                                    final float positionScore = playerPositionBalancer.calcPlayerPrimaryScore(2.0f, arr, userInfoArray);
+                                                    final float teamSrScore = teamSRBalancer.calcTeamSrDifference(1.0f, arr, userInfoArray);
+                                                    final float total = roleScore + positionScore;
                                                     for (TeamBalanceResult result : teamBalanceResultList) {
                                                         if (total > result.getScore()) {
                                                             result.setScore(total);
                                                             result.setTeam(arr);
                                                             result.getBalanceInspector()
                                                                     .setFromInspector(total)
-                                                                    .setFromInspector(teamSRBalancer)
-                                                                    .setFromInspector(teamAdaptabilityBalancer)
                                                                     .setFromInspector(teamRoleSRBalancer)
+                                                                    .setFromInspector(teamSRBalancer)
                                                                     .setFromInspector(playerPositionBalancer);
                                                             break;
                                                         }

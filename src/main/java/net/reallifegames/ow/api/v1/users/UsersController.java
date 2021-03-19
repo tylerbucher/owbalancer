@@ -26,11 +26,15 @@ package net.reallifegames.ow.api.v1.users;
 import io.javalin.http.Context;
 import net.reallifegames.ow.Balancer;
 import net.reallifegames.ow.DbModule;
+import net.reallifegames.ow.SecurityModule;
+import net.reallifegames.ow.SettingsModule;
 import net.reallifegames.ow.api.v1.ApiController;
-import net.reallifegames.ow.models.UserInfo;
+import net.reallifegames.ow.api.v1.users.get.SafeUserModel;
+import net.reallifegames.ow.models.UserModel;
 
 import javax.annotation.Nonnull;
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Base users api controller, which dispatches information about users in this application. This is a secure api
@@ -41,39 +45,41 @@ import java.io.IOException;
 public class UsersController {
 
     /**
-     * Returns all users the the client.
-     *
-     * @param context the REST request context to modify if the user is not an admin.
-     * @throws IOException if the object could not be marshaled.
+     * Default list of permissions for this endpoint.
      */
-    public static void getUsers(@Nonnull final Context context) throws IOException {
-        getUsers(context, Balancer.getDbModule());
+    private static final List<Integer> PERMISSIONS = new ArrayList<>();
+
+    /**
+     * Attempts to create a new user from the post data.
+     *
+     * @param context the REST request context to modify.
+     */
+    public static void getUsers(@Nonnull final Context context) throws Exception {
+        getUsers(context, Balancer.getDbModule(), Balancer.getSecurityModule(), Balancer.getSettingsModule());
     }
 
     /**
-     * Returns all users to the the client.
+     * Attempts to create a new user from the post data.
      *
-     * @param context  the REST request context to modify if the user is not an admin.
-     * @param dbModule the module instance to use.
-     * @throws IOException if the object could not be marshaled.
+     * @param context        the REST request context to modify.
+     * @param dbModule       the module instance to use.
+     * @param securityModule the module instance to use.
      */
-    public static void getUsers(@Nonnull final Context context, @Nonnull final DbModule dbModule) throws IOException {
-        final Integer param = context.pathParam(":id", Integer.class).getOrNull();
-        if (param == null || param == -1) {
-            context.status(200);
-            // Set response payload
-            ApiController.jsonContextResponse(new UsersResponse(ApiController.apiResponse, dbModule.getUserList(), dbModule.getUserNameList()), context);
-        } else {
-            final UserInfo userInfo = dbModule.getUserInfo(param);
-            if (userInfo == null) {
-                ApiController.LOGGER.debug("Api login controller request marshall error");
-                context.status(400);
-                context.result("Bad Request");
-                return;
-            }
-            context.status(200);
-            // Set response payload
-            ApiController.jsonContextResponse(new SingleUserResponse(ApiController.apiResponse, userInfo, dbModule.getNameListForId(param)), context);
-        }
+    public static void getUsers(@Nonnull final Context context,
+                                @Nonnull final DbModule dbModule,
+                                @Nonnull final SecurityModule securityModule,
+                                @Nonnull final SettingsModule settingsModule) throws Exception {
+        final UserModel userModel = ApiController.beforeApiAuthentication(context, dbModule, securityModule, PERMISSIONS);
+        // Set the response type
+        ApiController.jsonContextResponse(new UserResponse(convertUserModelList(userModel), Integer.parseInt(settingsModule.getDefaultPlayersPerUser().value)), context);
+    }
+
+    /**
+     * @param userModel the UserModel to be converted.
+     * @return the new converted SafeUserModel.
+     */
+    @Nonnull
+    private static SafeUserModel convertUserModelList(@Nonnull final UserModel userModel) {
+        return SafeUserModel.fromUserModel(userModel, true);
     }
 }

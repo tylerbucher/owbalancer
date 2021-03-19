@@ -23,7 +23,7 @@
  */
 package net.reallifegames.ow.balancer;
 
-import net.reallifegames.ow.models.UserInfo;
+import net.reallifegames.ow.models.PlayerModel;
 
 import javax.annotation.Nonnull;
 
@@ -43,7 +43,7 @@ public class TeamSRBalancer {
 
     public float calcTeamSrDifference(final float div,
                                       @Nonnull final int[] idArray,
-                                      @Nonnull final UserInfo[] userInfoList) {
+                                      @Nonnull final PlayerModel[] userInfoList) {
         team1Sr = getTeamSr(0, idArray, userInfoList);
         final int team1Size = teamSize(0, idArray, userInfoList);
         final int iTeam1Sr = team1Size == 0 ?
@@ -55,17 +55,17 @@ public class TeamSRBalancer {
         return (((float) Math.min(iTeam1Sr, iTeam2Sr)) * div) / ((float) Math.max(iTeam2Sr, iTeam1Sr));
     }
 
-    private int teamSize(final int offset, @Nonnull final int[] idArray, @Nonnull final UserInfo[] userInfoList) {
+    private int teamSize(final int offset, @Nonnull final int[] idArray, @Nonnull final PlayerModel[] userInfoList) {
         int ts = 0;
         for (int i = 0; i < 6; i++) {
-            if (userInfoList[idArray[offset]].id != 0) {
+            if (!userInfoList[idArray[offset]].uuid.equals("")) {
                 ts++;
             }
         }
         return ts;
     }
 
-    private int getTeamSr(final int offset, @Nonnull final int[] idArray, @Nonnull final UserInfo[] userInfoList) {
+    private int getTeamSr(final int offset, @Nonnull final int[] idArray, @Nonnull final PlayerModel[] userInfoList) {
         return userInfoList[idArray[offset]].tankSr +
                 userInfoList[idArray[offset + 1]].tankSr +
                 userInfoList[idArray[offset + 2]].dpsSr +
@@ -74,7 +74,7 @@ public class TeamSRBalancer {
                 userInfoList[idArray[offset + 5]].supportSr;
     }
 
-    private float inflateTeamSr(final int teamSr, final int offset, @Nonnull final int[] idArray, @Nonnull final UserInfo[] userInfoList) {
+    private float inflateTeamSr(final int teamSr, final int offset, @Nonnull final int[] idArray, @Nonnull final PlayerModel[] userInfoList) {
         return getInflation(teamSr, userInfoList[idArray[offset]].tankSr) +
                 getInflation(teamSr, userInfoList[idArray[offset + 1]].tankSr) +
                 getInflation(teamSr, userInfoList[idArray[offset + 2]].dpsSr) +

@@ -23,14 +23,14 @@
  */
 package net.reallifegames.ow;
 
-import net.reallifegames.ow.models.UserInfo;
-import net.reallifegames.ow.models.UserInfoTableModel;
-import net.reallifegames.ow.models.UserNamesTableModel;
+import net.reallifegames.ow.models.PlayerModel;
+import net.reallifegames.ow.models.SettingModel;
+import net.reallifegames.ow.models.UserInviteModel;
+import net.reallifegames.ow.models.UserModel;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Map;
 
 /**
  * An interface to define database agnostic functions.
@@ -39,129 +39,77 @@ import java.util.Map;
  */
 public interface DbModule {
 
-    /**
-     * Attempts to create the db tables.
-     */
-    void createTables();
-
-    /**
-     * Attempts to create the db tables.
-     */
-    void createTables(@Nonnull final String... tableStatements);
-
-    /**
-     * Retrieves a list of user info from a list of ids.
-     *
-     * @param userIds the list of ids to get info for.
-     * @return users admin and active status from a database or null if user not found.
-     */
-    List<UserInfo> getUserResponses(final int[] userIds);
-
-    /**
-     * @return the list of users in the db.
-     */
-    List<Map.Entry<Integer, String>> getUserList();
-
-    /**
-     * @return the list of users in the db.
-     */
-    Map<Integer, String> getUserNameList();
-
-    /**
-     * Checks to see if a user already exists.
-     *
-     * @param username the username to check.
-     * @return true if the user exists false otherwise.
-     */
-    boolean userExists(@Nonnull final String username);
-
-    /**
-     * Checks to see if a user already exists.
-     *
-     * @param id the id to check.
-     * @return true if the user exists false otherwise.
-     */
-    boolean deletePlayer(final int id);
-
-    /**
-     * Attempts to create a new user.
-     *
-     * @param username name of the new user.
-     * @return true if the user was created false otherwise.
-     */
-    boolean createUser(@Nonnull final String username,
-                       final int tankSr,
-                       final int tankPreference,
-                       final int dpsSr,
-                       final int dpsPreference,
-                       final int supportSr,
-                       final int supportPreference);
-
-    /**
-     * @param username the name of a user.
-     * @return the id of a user based on the username.
-     */
-    int getUserId(@Nonnull final String username);
-
-    /**
-     * Adds overwatch usernames to a users profile.
-     *
-     * @param id             the id of the users profile.
-     * @param overwatchNames the list of names to add to a user.
-     * @return true if the operation was successful false otherwise.
-     */
-    boolean addOverwatchName(final int id, @Nonnull final String[] overwatchNames);
-
-    /**
-     * @param id the users id to get info for.
-     * @return a users information object.
-     */
     @Nullable
-    UserInfo getUserInfo(final int id);
+    UserModel getUserModelByEmail(@Nonnull final String email);
 
-    /**
-     * @param id the id of the user.
-     * @return the list of usernames in the db.
-     */
-    List<String> getNameListForId(final int id);
+    @Nullable
+    UserModel getUserModelByUsername(@Nonnull final String username);
 
-    /**
-     * Deletes the list of overwatch usernames for a user.
-     *
-     * @param id the id of the user.
-     * @return true if the operation was successful false otherwise.
-     */
-    boolean deleteOwNamesForId(final int id);
+    @Nullable
+    UserInviteModel getUserInviteModelByEmail(@Nonnull final String email);
 
-    /**
-     * Updates a users information.
-     *
-     * @param id                the id of the user.
-     * @param username          the new users name.
-     * @param tankSr            the new sr for the user.
-     * @param tankPreference    0 for not wanting to play, 1 for can play, 2 for wants to play.
-     * @param dpsSr             the new sr for the user.
-     * @param dpsPreference     0 for not wanting to play, 1 for can play, 2 for wants to play.
-     * @param supportSr         the new sr for the user.
-     * @param supportPreference 0 for not wanting to play, 1 for can play, 2 for wants to play.
-     * @return true if the operation was successful false otherwise.
-     */
-    boolean updateUser(final int id,
-                       @Nonnull final String username,
-                       final int tankSr,
-                       final int tankPreference,
-                       final int dpsSr,
-                       final int dpsPreference,
-                       final int supportSr,
-                       final int supportPreference);
+    boolean createNewUser(@Nonnull final String email,
+                          @Nonnull final String username,
+                          @Nonnull final String password);
 
-    /**
-     * @return the entire user table.
-     */
-    List<UserInfoTableModel> getAllUserTableData();
+    @Nullable
+    SettingModel getSettingByName(@Nonnull final String name);
 
-    /**
-     * @return the entire user names table.
-     */
-    List<UserNamesTableModel> getAllUsersNames();
+    boolean createSetting(@Nonnull final SettingModel settingModel, final boolean createIfNotExists);
+
+    boolean createNewInvite(@Nonnull final String email,
+                            @Nonnull final List<Integer> permissions);
+
+    boolean updateInvite(@Nonnull final String email,
+                         @Nonnull final String newEmail,
+                         @Nullable final List<Integer> permissions);
+
+    boolean deleteInvite(@Nonnull final String email);
+
+    List<UserInviteModel> getAllUserInviteModels();
+
+    void close();
+
+    @Nonnull
+    List<UserModel> getAllUserModels();
+
+    boolean updateUserModel(@Nonnull final String email,
+                            @Nonnull final String username,
+                            @Nonnull final String password,
+                            final boolean active,
+                            @Nullable final List<Integer> permissions);
+
+    boolean deleteUser(@Nonnull final String email);
+
+    boolean createNewPlayer(@Nonnull final String userId,
+                            @Nonnull final String playerName,
+                            final int tankPreference,
+                            final int supportPreference,
+                            final int dpsPreference,
+                            final int tankSr,
+                            final int supportSr,
+                            final int dpsSr,
+                            @Nonnull final String[] names,
+                            final boolean useUsername);
+
+    boolean updatePlayer(@Nonnull final String uuid,
+                         @Nonnull final String playerName,
+                         final int tankPreference,
+                         final int supportPreference,
+                         final int dpsPreference,
+                         final int tankSr,
+                         final int supportSr,
+                         final int dpsSr,
+                         @Nonnull final String[] names);
+
+    @Nonnull
+    List<PlayerModel> getAllPlayerModels();
+
+    @Nonnull
+    List<PlayerModel> getPlayerModelsFromUuids(@Nonnull final List<String> uuids);
+
+    @Nullable
+    PlayerModel getPlayerModel(@Nonnull final String uuid);
+
+    boolean deletePlayer(@Nonnull final String uuid);
 }

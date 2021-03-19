@@ -28,18 +28,23 @@ import net.reallifegames.ow.DbModule;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Delete data request model.
+ *
+ * @author Tyler Bucher
+ */
 public class DeleteUserRequest {
 
     /**
-     * User id to delete.
+     * User email to delete.
      */
-    private final int id;
+    private final String email;
 
     /**
-     * @param id the id to delete.
+     * @param email the email to delete.
      */
-    public DeleteUserRequest(@JsonProperty ("id") final int id) {
-        this.id = id;
+    public DeleteUserRequest(@JsonProperty ("id") @Nonnull final String email) {
+        this.email = email;
     }
 
     /**
@@ -49,6 +54,6 @@ public class DeleteUserRequest {
      * @return true if the user was created false otherwise.
      */
     public boolean deletePlayer(@Nonnull final DbModule dbModule) {
-        return dbModule.deletePlayer(this.id);
+        return dbModule.deleteUser(this.email);
     }
 }

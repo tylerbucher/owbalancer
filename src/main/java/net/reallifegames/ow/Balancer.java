@@ -25,28 +25,31 @@ package net.reallifegames.ow;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import io.javalin.Javalin;
 import io.javalin.apibuilder.ApiBuilder;
-import io.javalin.http.staticfiles.Location;
 import net.reallifegames.ow.api.v1.ApiController;
+import net.reallifegames.ow.api.v1.authentication.get.AuthenticationGetController;
+import net.reallifegames.ow.api.v1.authentication.post.AuthenticationPostController;
 import net.reallifegames.ow.api.v1.balance.BalanceController;
-import net.reallifegames.ow.api.v1.datas.get.ExportDataController;
-import net.reallifegames.ow.api.v1.datas.post.ImportDataController;
+import net.reallifegames.ow.api.v1.invites.delete.InviteDeleteController;
+import net.reallifegames.ow.api.v1.invites.get.InviteGetController;
+import net.reallifegames.ow.api.v1.invites.patch.InvitePatchController;
+import net.reallifegames.ow.api.v1.invites.post.InvitePostController;
+import net.reallifegames.ow.api.v1.permissions.get.PermissionsGetController;
+import net.reallifegames.ow.api.v1.players.PlayersController;
+import net.reallifegames.ow.api.v1.players.delete.PlayersDeleteController;
+import net.reallifegames.ow.api.v1.players.get.PlayersGetController;
+import net.reallifegames.ow.api.v1.players.patch.PlayersPatchController;
+import net.reallifegames.ow.api.v1.players.post.PlayersPostController;
 import net.reallifegames.ow.api.v1.users.UsersController;
 import net.reallifegames.ow.api.v1.users.delete.UsersDeleteController;
+import net.reallifegames.ow.api.v1.users.get.UsersGetController;
+import net.reallifegames.ow.api.v1.users.patch.UsersPatchController;
 import net.reallifegames.ow.api.v1.users.post.UsersPostController;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 
 public class Balancer {
-
-    /**
-     * The static logger for the application.
-     */
-    public static final Logger LOGGER = LoggerFactory.getLogger(Balancer.class);
 
     /**
      * The global json factory.
@@ -59,26 +62,24 @@ public class Balancer {
     public static final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
-     * The database jdbc type.
+     * Static db module reference.
      */
-    private static String JDBC_TYPE = "";
-
-    /**
-     * The database url connection string.
-     */
-    private static String JDBC_URL = "";
-
-    /**
-     * The website domain.
-     * <p>
-     * Example: example.com
-     */
-    public static String DOMAIN = "";
+    private static DbModule DB_MODULE;
 
     /**
      * Static db module reference.
      */
-    private static DbModule DB_MODULE;
+    private static SecurityModule SECURITY_MODULE;
+
+    /**
+     * Static db settings module reference.
+     */
+    private static SettingsModule SETTINGS_MODULE;
+
+    /**
+     * Global application configuration
+     */
+    private static Config CONFIG;
 
     /**
      * Main class for the Local Auth application.
@@ -86,20 +87,11 @@ public class Balancer {
      * @param args the program arguments to run with.
      */
     public static void main(@Nonnull final String[] args) {
-        Balancer.JDBC_TYPE = System.getenv("JDBC_TYPE");
-        Balancer.JDBC_URL = System.getenv("JDBC_URL");
-        Balancer.DOMAIN = System.getenv("DOMAIN");
-        Balancer.objectMapper.enable(SerializationFeature.WRAP_ROOT_VALUE);
-        try {
-            Balancer.DB_MODULE = Balancer.findDbModule(Balancer.JDBC_TYPE);
-        } catch (ClassNotFoundException e) {
-            LOGGER.error("Error loading sq lite driver.", e);
-        }
-        Balancer.DB_MODULE.createTables();
-        final Javalin javalinApp = Javalin.create(config->{
-            config.addStaticFiles(System.getProperty("user.dir") + "/public", Location.EXTERNAL);
-            config.addSinglePageRoot("/", System.getProperty("user.dir") + "/public/" + "index.html", Location.EXTERNAL);
-        });
+        Balancer.CONFIG = new Config();
+        Balancer.DB_MODULE = MongoDbModule.getInstance();
+        Balancer.SECURITY_MODULE = SecurityModule.getInstance();
+        Balancer.SETTINGS_MODULE = new SettingsModule(DB_MODULE);
+        final Javalin javalinApp = Javalin.create();
         // CORS information
         javalinApp.before("*/*", (context)->{
             context.header("Access-Control-Allow-Origin", "*");
@@ -111,32 +103,34 @@ public class Balancer {
         // Api v1 pathing group
         javalinApp.routes(()->ApiBuilder.path("/api/v1", ()->{
             ApiBuilder.get("/", ApiController::getApiInformation);
-            ApiBuilder.get("/users/:id", UsersController::getUsers);
-            ApiBuilder.post("/users/:id", UsersPostController::postNewUser);
-            ApiBuilder.delete("/users/:id", UsersDeleteController::deleteUser);
+            ApiBuilder.get("/authentication", AuthenticationGetController::getAuthentication);
+            ApiBuilder.post("/authentication", AuthenticationPostController::postAuthentication);
+
+            ApiBuilder.get("/users", UsersController::getUsers);
+            ApiBuilder.get("/users/*", UsersGetController::getUsers);
+            ApiBuilder.post("/users", UsersPostController::postUser);
+            ApiBuilder.patch("/users", UsersPatchController::patchUser);
+            ApiBuilder.delete("/users/*", UsersDeleteController::deleteUser);
+
+            ApiBuilder.get("/permissions", PermissionsGetController::getPermissions);
+
+            ApiBuilder.get("/invites", InviteGetController::getInvites);
+            ApiBuilder.post("/invites", InvitePostController::postInvite);
+            ApiBuilder.patch("/invites", InvitePatchController::patchInvite);
+            ApiBuilder.delete("/invites/*", InviteDeleteController::deleteInvite);
+
+            ApiBuilder.get("/players", PlayersGetController::getPlayers);
+            ApiBuilder.get("/players/*", PlayersController::getPlayer);
+            ApiBuilder.post("/players", PlayersPostController::postNewPlayer);
+            ApiBuilder.patch("/players", PlayersPatchController::patchPlayer);
+            ApiBuilder.delete("/players/*", PlayersDeleteController::deletePlayer);
+
             ApiBuilder.post("/balance", BalanceController::postBalance);
-            ApiBuilder.get("/datas", ExportDataController::getApplicationData);
-            ApiBuilder.post("/datas", ImportDataController::postApplicationData);
         }));
         javalinApp.start(8080);
-    }
-
-    /**
-     * Attempts to find a valid database module based on its name.
-     *
-     * @param key the name of a module.
-     * @return the requested db modules instance or sqlite module if none is found.
-     *
-     * @throws ClassNotFoundException if the sqlite JDBC class cannot be loaded.
-     */
-    private static DbModule findDbModule(@Nonnull final String key) throws ClassNotFoundException {
-        switch (key) {
-            case "mysql":
-                return MySqlModule.getInstance();
-            default:
-                Class.forName("org.sqlite.JDBC");
-                return SqLiteModule.getInstance();
-        }
+        Runtime.getRuntime().addShutdownHook(new Thread(()->{
+            DB_MODULE.close();
+        }));
     }
 
     /**
@@ -146,10 +140,15 @@ public class Balancer {
         return DB_MODULE;
     }
 
-    /**
-     * @return the database url connection string.
-     */
-    public static String getJdbcUrl() {
-        return JDBC_URL;
+    public static SecurityModule getSecurityModule() {
+        return SECURITY_MODULE;
+    }
+
+    public static Config getConfig() {
+        return CONFIG;
+    }
+
+    public static SettingsModule getSettingsModule() {
+        return SETTINGS_MODULE;
     }
 }

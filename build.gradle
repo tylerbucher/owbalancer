@@ -2,15 +2,14 @@ plugins {
     id 'java'
     id 'application'
     id "com.github.hierynomus.license" version "0.14.0"
-    id 'com.github.johnrengelman.shadow' version '2.0.2'
-    id "com.github.node-gradle.node" version "2.2.3"
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
 }
 
 group 'net.reallifegames.ow'
 version '1.0-SNAPSHOT'
 mainClassName = "net.reallifegames.ow.Balancer"
 
-sourceCompatibility = 1.8
+//sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
@@ -24,20 +23,16 @@ sourceSets {
     javascript
 }
 
-jar {
-    baseName = 'OWBalancer'
-    version =  '1.0.0'
-}
-
 dependencies {
+    compile group: 'com.google.code.findbugs', name: 'jsr305', version: '1.3.9'
     compile 'io.javalin:javalin:3.8.0'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.9.4'
-    compile group: 'com.google.code.findbugs', name: 'jsr305', version: '1.3.9'
+
     compile group: 'org.mindrot', name: 'jbcrypt', version: '0.4'
-    compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.18'
     compile 'io.jsonwebtoken:jjwt-api:0.10.7'
-    compile 'com.zaxxer:HikariCP:3.4.2'
-    compile group: 'org.xerial', name: 'sqlite-jdbc', version: '3.31.1'
+
+    compile 'org.mongodb:mongo-java-driver:3.12.7'
+    compile 'dev.morphia.morphia:morphia-core:2.0.2'
 
     shadow group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
     shadow group: 'org.mindrot', name: 'jbcrypt', version: '0.4'
@@ -48,6 +43,8 @@ dependencies {
     shadow 'io.jsonwebtoken:jjwt-jackson:0.10.7'
     shadow 'com.zaxxer:HikariCP:3.4.2'
     shadow group: 'org.xerial', name: 'sqlite-jdbc', version: '3.31.1'
+    shadow 'org.mongodb:mongo-java-driver:3.12.7'
+    shadow 'dev.morphia.morphia:morphia-core:2.0.2'
 
     testCompile 'io.javalin:javalin:3.8.0'
     testCompile group: 'junit', name: 'junit', version: '4.12'
@@ -64,15 +61,20 @@ license {
 }
 
 shadowJar {
-    baseName = "OWBalancer"
-    classifier = null
-    version = null
-
-    configurations = [project.configurations.shadow]
+    archiveBaseName.set('OWBalancer')
+    archiveClassifier.set('')
+    archiveVersion.set('')
 }
+/*shadowJar {
+    archivesBaseName.set("OWBalancer")
+    archiveClassifier.set("")
+    archiveVersion.set("")
+
+    //configurations = [project.configurations.shadow]
+}*/
 
 wrapper {
-    gradleVersion = '3.4.1'
+    gradleVersion = '6.6'
 }
 
 task copyShell(type: Copy) {
@@ -80,23 +82,5 @@ task copyShell(type: Copy) {
     into 'build/libs/'
 }
 
-task npmCustomInstall(type: NpmTask) {
-    workingDir = file('./src/javascript/resources/ui')
-    args = ['install']
-}
-
-task npmCustomBuild(type: NpmTask) {
-    workingDir = file('./src/javascript/resources/ui')
-    args = ['run', 'build']
-}
-
-task copyReact(type: Copy) {
-    from 'src/javascript/resources/ui/build'
-    into 'build/libs/public'
-}
-
-npmCustomBuild.dependsOn.add("npmCustomInstall")
-copyReact.dependsOn.add("npmCustomBuild")
-
-build.dependsOn.add("shadowJar")
-build.dependsOn.add("copyShell")
+//build.dependsOn.add("shadowJar")
+//build.dependsOn.add("copyShell")

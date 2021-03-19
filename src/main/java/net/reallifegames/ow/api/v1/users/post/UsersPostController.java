@@ -26,30 +26,31 @@ package net.reallifegames.ow.api.v1.users.post;
 import io.javalin.http.Context;
 import net.reallifegames.ow.Balancer;
 import net.reallifegames.ow.DbModule;
-import net.reallifegames.ow.api.v1.ApiController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
 
+/**
+ * Controller for handling the creation of new users.
+ *
+ * @author Tyler Bucher
+ */
 public class UsersPostController {
 
     /**
-     * Default create user success response.
+     * The static logger for this version of the api.
      */
-    private static final UsersPostResponse successResponse = new UsersPostResponse(ApiController.apiResponse, "success");
-
-    /**
-     * Default create user error response.
-     */
-    private static final UsersPostResponse errorResponse = new UsersPostResponse(ApiController.apiResponse, "error");
+    public static final Logger LOGGER = LoggerFactory.getLogger(UsersPostController.class);
 
     /**
      * Attempts to create a new user from the post data.
      *
      * @param context the REST request context to modify.
      */
-    public static void postNewUser(@Nonnull final Context context) throws IOException {
-        postNewUser(context, Balancer.getDbModule());
+    public static void postUser(@Nonnull final Context context) {
+        postUser(context, Balancer.getDbModule());
     }
 
     /**
@@ -57,46 +58,29 @@ public class UsersPostController {
      *
      * @param context  the REST request context to modify.
      * @param dbModule the module instance to use.
-     * @throws IOException if the object could not be marshaled.
      */
-    public static void postNewUser(@Nonnull final Context context,
-                                   @Nonnull final DbModule dbModule) throws IOException {
-        // Set the response type
-        final UsersPostRequest userPostRequest;
+    public static void postUser(@Nonnull final Context context,
+                                @Nonnull final DbModule dbModule) {
+        final UsersPostRequest postRequest;
         try {
-            userPostRequest = Balancer.objectMapper.readValue(context.body(), UsersPostRequest.class);
+            postRequest = Balancer.objectMapper.readValue(context.body(), UsersPostRequest.class);
         } catch (IOException e) {
-            ApiController.LOGGER.debug("Api login controller request marshall error", e);
+            LOGGER.debug("postUser: ", e);
             context.status(400);
             context.result("Bad Request");
             return;
         }
-        if (!userPostRequest.isDataValid()) {
+        if (!postRequest.validate()) {
             context.status(406);
             context.result("Not Acceptable");
             return;
         }
-        final Integer param = context.pathParam(":id", Integer.class).getOrNull();
-        if (param == null || param == -1) {
-            final UsersPostResponse userResponse = userPostRequest.userExists(dbModule) ? errorResponse : successResponse;
-            if (userResponse.equals(successResponse)) {
-                context.status(userPostRequest.createUser(dbModule) ? 200 : 500);
-            } else {
-                context.status(409);
-            }
-            // Write json result
-            ApiController.jsonContextResponse(userResponse, context);
+        if (!postRequest.createNewUser(dbModule)) {
+            context.status(409);
+            context.result("Conflict");
         } else {
-            final UsersPostResponse userResponse;
-            if (userPostRequest.updateUser(param, dbModule)) {
-                userResponse = successResponse;
-                context.status(200);
-            } else {
-                userResponse = errorResponse;
-                context.status(500);
-            }
-            // Write json result
-            ApiController.jsonContextResponse(userResponse, context);
+            context.status(200);
+            context.result("Success");
         }
     }
 }

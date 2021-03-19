@@ -21,6 +21,8 @@ FROM openjdk:8u171-jre-alpine
 COPY --from=build OWBalancer.jar /opt/owbalancer/
 COPY --from=client /client /opt/owbalancer/public
 
+VOLUME /opt/owbalancer
+
 WORKDIR /opt/owbalancer
 
 ENTRYPOINT ["java", "-jar", "/opt/owbalancer/OWBalancer.jar"]

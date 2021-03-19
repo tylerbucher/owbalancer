@@ -50,22 +50,6 @@ public class BalanceInspector {
 
     public int team2TotalAverageSr;
 
-    public int team1Adaptability;
-
-    public int team1TankAdaptability;
-
-    public int team1DpsAdaptability;
-
-    public int team1SupportAdaptability;
-
-    public int team2Adaptability;
-
-    public int team2TankAdaptability;
-
-    public int team2DpsAdaptability;
-
-    public int team2SupportAdaptability;
-
     public int team1PositionPreferenceCount;
 
     public int team2PositionPreferenceCount;
@@ -75,12 +59,6 @@ public class BalanceInspector {
     public BalanceInspector setFromInspector(@Nonnull final PlayerPositionBalancer playerPositionInspector) {
         this.team1PositionPreferenceCount = playerPositionInspector.team1PositionPreferenceCount;
         this.team2PositionPreferenceCount = playerPositionInspector.team2PositionPreferenceCount;
-        return this;
-    }
-
-    public BalanceInspector setFromInspector(@Nonnull final TeamAdaptabilityBalancer teamAdaptabilityInspector) {
-        this.team1Adaptability = teamAdaptabilityInspector.team1Adaptability;
-        this.team2Adaptability = teamAdaptabilityInspector.team2Adaptability;
         return this;
     }
 
@@ -103,15 +81,11 @@ public class BalanceInspector {
     public void finalCalc(@Nonnull final List<BalancedPlayer> userInfoList) {
         final int[] teamCount = {0, 0};
         final int[] teamTotalSrDistribution = {0, 0};
-        final int[] teamAdaptability = {0, 0, 0, 0, 0, 0};
         userInfoList.forEach(balancedPlayer->{
             int i = balancedPlayer.team == 1 ? 0 : 1;
             int j = i == 0 ? 0 : 3;
             teamCount[i]++;
             teamTotalSrDistribution[i] += balancedPlayer.user.tankSr + balancedPlayer.user.dpsSr + balancedPlayer.user.supportSr;
-            teamAdaptability[j] += balancedPlayer.user.tankPreference;
-            teamAdaptability[j + 1] += balancedPlayer.user.dpsPreference;
-            teamAdaptability[j + 2] += balancedPlayer.user.supportPreference;
         });
         this.team1AverageSr = team1TotalSr / teamCount[0];
         this.team2AverageSr = team2TotalSr / teamCount[1];
@@ -119,13 +93,5 @@ public class BalanceInspector {
         this.team2TotalSrDistribution = teamTotalSrDistribution[1];
         this.team1TotalAverageSr = teamTotalSrDistribution[0] / 3 / teamCount[0];
         this.team2TotalAverageSr = teamTotalSrDistribution[1] / 3 / teamCount[1];
-        this.team1Adaptability = (this.team1Adaptability * 100) / 36;
-        this.team1TankAdaptability = (teamAdaptability[0] * 100) / 12;
-        this.team1DpsAdaptability = (teamAdaptability[1] * 100) / 12;
-        this.team1SupportAdaptability = (teamAdaptability[2] * 100) / 12;
-        this.team2Adaptability = (this.team2Adaptability * 100) / 36;
-        this.team2TankAdaptability = (teamAdaptability[3] * 100) / 12;
-        this.team2DpsAdaptability = (teamAdaptability[4] * 100) / 12;
-        this.team2SupportAdaptability = (teamAdaptability[5] * 100) / 12;
     }
 }

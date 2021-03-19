@@ -62,8 +62,8 @@ public class BalanceController {
             return;
         }
         if (!balanceRequest.validate()) {
-            context.status(400);
-            context.result("Bad Request");
+            context.status(406);
+            context.result("Not Acceptable");
             return;
         }
         final BalanceResponse balanceResponse = balanceRequest.getBalanceResponse(ApiController.apiResponse, dbModule);
