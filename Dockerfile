@@ -1,4 +1,4 @@
-FROM openjdk:8u171-jdk-alpine AS build
+FROM openjdk:14.0.1-jdk AS build
 
 COPY . /
 
@@ -7,7 +7,7 @@ RUN set -ex; \
     ./gradlew build --no-build-cache; \
     mv build/libs/OWBalancer.jar / ;
 
-FROM openjdk:8u171-jre-alpine
+FROM openjdk:14-alpine
 
 COPY --from=build OWBalancer.jar /opt/owbalancer/
 
