@@ -34,18 +34,22 @@ public class TeamRoleSRBalancer {
     public float calcTeamRoleDifference(final float div,
                                         @Nonnull final int[] idArray,
                                         @Nonnull final PlayerModel[] userInfoList) {
-        final int team1TankSr = userInfoList[idArray[0]].tankSr + userInfoList[idArray[1]].tankSr;
-        final int team1DpsSr = userInfoList[idArray[2]].dpsSr + userInfoList[idArray[3]].dpsSr;
-        final int team1SupportSr = userInfoList[idArray[4]].supportSr + userInfoList[idArray[5]].supportSr;
+        final int team1TankSr = calcSr(userInfoList[idArray[0]].tankSr) + calcSr(userInfoList[idArray[1]].tankSr);
+        final int team1DpsSr = calcSr(userInfoList[idArray[2]].dpsSr) + calcSr(userInfoList[idArray[3]].dpsSr);
+        final int team1SupportSr = calcSr(userInfoList[idArray[4]].supportSr) + calcSr(userInfoList[idArray[5]].supportSr);
         final int team1Sr = team1TankSr + team1DpsSr + team1SupportSr;
 
-        final int team2TankSr = userInfoList[idArray[6]].tankSr + userInfoList[idArray[7]].tankSr;
-        final int team2DpsSr = userInfoList[idArray[8]].dpsSr + userInfoList[idArray[9]].dpsSr;
-        final int team2SupportSr = userInfoList[idArray[10]].supportSr + userInfoList[idArray[11]].supportSr;
+        final int team2TankSr = calcSr(userInfoList[idArray[6]].tankSr) + calcSr(userInfoList[idArray[7]].tankSr);
+        final int team2DpsSr = calcSr(userInfoList[idArray[8]].dpsSr) + calcSr(userInfoList[idArray[9]].dpsSr);
+        final int team2SupportSr = calcSr(userInfoList[idArray[10]].supportSr) + calcSr(userInfoList[idArray[11]].supportSr);
         final int team2Sr = team2TankSr + team2DpsSr + team2SupportSr;
 
         totalSRDifference = Math.abs(team1TankSr - team2TankSr) + Math.abs(team1DpsSr - team2DpsSr) + Math.abs(team1SupportSr - team2SupportSr);
         final int maxSr = Math.max(team2Sr, team1Sr);
         return (((float) (maxSr - totalSRDifference)) * div) / ((float) maxSr);
+    }
+
+    public int calcSr(final int sr) {
+        return (int) ((Math.tan(((Math.PI / 6000) * sr) - (((5.0 / 6.0) * Math.PI) / 2)) * 2500.0) + 2500.0);
     }
 }

@@ -172,7 +172,7 @@ public class MongoDbModule implements DbModule {
     @Override
     public boolean updateInvite(@NotNull final String email, @NotNull final String newEmail, @Nullable final List<Integer> permissions) {
         final UserInviteModel userInviteModel = getUserInviteModelByEmail(newEmail);
-        if (userInviteModel == null) {
+        if (userInviteModel != null) {
             final List<UpdateOperator> operators = new ArrayList<>();
             if (permissions != null) {
                 operators.add(UpdateOperators.set("permissions", permissions));
